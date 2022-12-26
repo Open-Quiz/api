@@ -8,7 +8,8 @@ datasource db {
 }
 
 model Quiz {
-  ID       Int      @id
-  QUESTION String   @db.Char(256)
-  OPTIONS  String[]
+  id            Int      @id
+  question      String   @db.Char(256)
+  options       String[]
+  correctOption Int      @default(-1)
 }

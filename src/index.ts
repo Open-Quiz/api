@@ -1,14 +1,16 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
+import apiRoutes from './routes';
 
 dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT) || 8000;
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Server :)');
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use('/api', apiRoutes);
 
 app.listen(port, () => {
     console.log(`⚡[server]: Server is running on port ${port}`);
