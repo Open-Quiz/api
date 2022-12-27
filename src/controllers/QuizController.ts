@@ -26,22 +26,15 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
     res.ok(quiz);
 }
 
-export async function createQuiz(req: Request<undefined, undefined, CreateQuiz>, res: Response) {
-    try {
-        const quiz = await CreateQuizModel.parseAsync(req.body);
+export async function createQuiz(req: Request<unknown, unknown, CreateQuiz>, res: Response) {
+    const quiz = req.body;
+    const newQuiz = await prisma.quiz.create({
+        data: {
+            question: quiz.question,
+            options: quiz.options,
+            correctOption: quiz.correctOption,
+        },
+    });
 
-        const newQuiz = await prisma.quiz.create({
-            data: {
-                question: quiz.question,
-                options: quiz.options,
-                correctOption: quiz.correctOption,
-            },
-        });
-
-        res.ok(newQuiz);
-    } catch (err) {
-        const zodError = err as ZodError;
-        console.error(zodError.message);
-        return res.badRequest(zodError.message);
-    }
+    res.ok(newQuiz);
 }
