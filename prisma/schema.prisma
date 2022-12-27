@@ -2,14 +2,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator zod {
+  provider = "rest-zod-prisma"
+  output  = "../src/zod"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Quiz {
-  id            Int      @id
-  question      String   @db.Char(256)
+  id            Int      @id @default(autoincrement())
+  question      String   @db.VarChar(256)
   options       String[]
   correctOption Int      @default(-1)
 }

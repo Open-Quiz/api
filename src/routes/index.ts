@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getAllQuizzes, getQuiz } from '../controllers/QuizController';
+import { createQuiz, getAllQuizzes, getQuiz } from '../controllers/QuizController';
 
 const apiRoutes = Router();
 
-apiRoutes.route('/quizzes/').get(getAllQuizzes);
+apiRoutes.route('/quizzes/').get(getAllQuizzes).post(createQuiz);
 apiRoutes.route('/quizzes/:id').get(getQuiz);
 
 export default apiRoutes;

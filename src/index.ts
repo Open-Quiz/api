@@ -2,6 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import apiRoutes from './routes';
 
+// Apply module augmentation
+import './types/Response';
+
 dotenv.config();
 
 const app = express();

@@ -11,4 +11,6 @@ pnpm-lock.yaml
 *.env.*
 
 # prisma
-prisma/migrations
+prisma/zod
+
+src/zod

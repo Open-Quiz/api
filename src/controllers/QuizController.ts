@@ -1,6 +1,9 @@
+import { Quiz } from '@prisma/client';
 import { Request, Response } from 'express';
+import { ZodError } from 'zod';
 import prisma from '../client';
 import IdParam from '../types/IdParam';
+import { CreateQuiz, CreateQuizModel } from '../zod';
 
 export async function getAllQuizzes(req: Request, res: Response) {
     const allQuizzes = await prisma.quiz.findMany();
@@ -21,4 +24,24 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
     }
 
     res.ok(quiz);
+}
+
+export async function createQuiz(req: Request<undefined, undefined, CreateQuiz>, res: Response) {
+    try {
+        const quiz = await CreateQuizModel.parseAsync(req.body);
+
+        const newQuiz = await prisma.quiz.create({
+            data: {
+                question: quiz.question,
+                options: quiz.options,
+                correctOption: quiz.correctOption,
+            },
+        });
+
+        res.ok(newQuiz);
+    } catch (err) {
+        const zodError = err as ZodError;
+        console.error(zodError.message);
+        return res.badRequest(zodError.message);
+    }
 }
