@@ -1,9 +1,7 @@
-import { Quiz } from '@prisma/client';
 import { Request, Response } from 'express';
-import { ZodError } from 'zod';
 import prisma from '../client';
 import IdParam from '../types/IdParam';
-import { CreateQuiz, CreateQuizModel } from '../zod';
+import { CreateQuiz } from '../zod';
 
 export async function getAllQuizzes(req: Request, res: Response) {
     const allQuizzes = await prisma.quiz.findMany();
@@ -12,12 +10,7 @@ export async function getAllQuizzes(req: Request, res: Response) {
 }
 
 export async function getQuiz(req: Request<IdParam>, res: Response) {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-        return res.badRequest(`The quiz id must be a number`);
-    }
-
-    const quiz = await prisma.quiz.findUnique({ where: { id } });
+    const quiz = await prisma.quiz.findUnique({ where: { id: req.params.id } });
 
     if (!quiz) {
         return res.notFound(`There is no quiz with the id ${req.params.id}`);
@@ -27,13 +20,9 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
 }
 
 export async function createQuiz(req: Request<unknown, unknown, CreateQuiz>, res: Response) {
-    const quiz = req.body;
+    console.log(req.body);
     const newQuiz = await prisma.quiz.create({
-        data: {
-            question: quiz.question,
-            options: quiz.options,
-            correctOption: quiz.correctOption,
-        },
+        data: req.body,
     });
 
     res.ok(newQuiz);

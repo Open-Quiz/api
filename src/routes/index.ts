@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { createQuiz, getAllQuizzes, getQuiz } from '../controllers/QuizController';
 import validate from '../middleware/validate';
+import IdModel from '../models/zod/PositiveIntegerModel';
 import { CreateQuizModel } from '../zod';
 
-const apiRoutes = Router();
+export const quizRoutes = Router();
 
-apiRoutes
-    .route('/quizzes/')
+quizRoutes
+    .route('/')
     .get(getAllQuizzes)
     .post(validate({ body: CreateQuizModel }), createQuiz);
-apiRoutes.route('/quizzes/:id').get(getQuiz);
 
-export default apiRoutes;
+quizRoutes.route('/:id').get(validate({ param: IdModel }), getQuiz);

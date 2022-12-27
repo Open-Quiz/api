@@ -12,10 +12,10 @@ export default function validate<ParamType = unknown, BodyType = unknown>(
     return async (req, res, next) => {
         try {
             if (options.param) {
-                await options.param.parseAsync(req.params);
+                req.params = await options.param.parseAsync(req.params);
             }
             if (options.body) {
-                await options.body.parseAsync(req.body);
+                req.body = await options.body.parseAsync(req.body);
             }
 
             next();
