@@ -1,5 +1,5 @@
 import { ZodError, ZodSchema } from 'zod';
-import { NextFunction, Request, Response, RequestHandler } from 'express';
+import { RequestHandler } from 'express';
 
 export type ValidationOptions<ParamType, BodyType> = {
     param?: ZodSchema<ParamType>;
@@ -20,10 +20,11 @@ export default function validate<ParamType = unknown, BodyType = unknown>(
 
             next();
         } catch (err) {
+            next(err);
             console.error(err);
-            if (err instanceof ZodError) {
-                res.badRequest(err.message);
-            }
+            // if (err instanceof ZodError) {
+            //     res.badRequest(err.message);
+            // }
         }
     };
 }

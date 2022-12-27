@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../client';
-import IdParam from '../types/IdParam';
+import IdParam from '../types/idParam';
 import { CreateQuiz } from '../zod';
 
 export async function getAllQuizzes(req: Request, res: Response) {

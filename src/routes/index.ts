@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { createQuiz, getAllQuizzes, getQuiz } from '../controllers/QuizController';
-import validate from '../middleware/validate';
-import IdModel from '../models/zod/PositiveIntegerModel';
+import { createQuiz, getAllQuizzes, getQuiz } from '../controllers/quizController';
+import validate from '../middleware/validationHandler';
+import IdModel from '../models/zod/idModel';
 import { CreateQuizModel } from '../zod';
 
 export const quizRoutes = Router();

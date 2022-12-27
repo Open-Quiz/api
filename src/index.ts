@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { quizRoutes } from './routes';
 
 // Apply module augmentation
-import './types/Response';
+import './types/response';
 
 dotenv.config();
 
