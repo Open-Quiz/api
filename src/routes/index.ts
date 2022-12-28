@@ -1,33 +1,33 @@
 import { Router } from 'express';
 import {
-    createQuiz,
-    createQuizzes,
-    deleteQuiz,
-    deleteQuizzes,
-    getAllQuizzes,
-    getQuiz,
-    updateQuiz,
-} from '../controllers/quizController';
+    createQuizQuestion,
+    createQuizQuestions,
+    deleteQuizQuestion,
+    deleteQuizQuestions,
+    getAllQuizQuestions,
+    getQuizQuestion,
+    updateQuizQuestion,
+} from '../controllers/quizQuestionController';
 import validate from '../middleware/validationHandler';
 import { IdModel, IdArrayModel } from '../models/zod/idModel';
-import { CreateQuizModel, PatchQuizModel } from '../zod';
+import { CreateQuizQuestionModel, PatchQuizQuestionModel } from '../zod';
 
 export const quizRoutes = Router();
 
-const CreateQuizModelArray = CreateQuizModel.array();
+const CreateQuizModelArray = CreateQuizQuestionModel.array();
 
 quizRoutes
     .route('/')
-    .get(getAllQuizzes)
-    .post(validate({ body: CreateQuizModel }), createQuiz);
+    .get(getAllQuizQuestions)
+    .post(validate({ body: CreateQuizQuestionModel }), createQuizQuestion);
 
 quizRoutes
     .route('/bulk')
-    .post(validate({ body: CreateQuizModelArray }), createQuizzes)
-    .delete(validate({ body: IdArrayModel }), deleteQuizzes);
+    .post(validate({ body: CreateQuizModelArray }), createQuizQuestions)
+    .delete(validate({ body: IdArrayModel }), deleteQuizQuestions);
 
 quizRoutes
     .route('/:id')
-    .get(validate({ param: IdModel }), getQuiz)
-    .patch(validate({ param: IdModel, body: PatchQuizModel }), updateQuiz)
-    .delete(validate({ param: IdModel }), deleteQuiz);
+    .get(validate({ param: IdModel }), getQuizQuestion)
+    .patch(validate({ param: IdModel, body: PatchQuizQuestionModel }), updateQuizQuestion)
+    .delete(validate({ param: IdModel }), deleteQuizQuestion);

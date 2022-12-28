@@ -12,7 +12,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Quiz {
+model QuizQuestion {
   id            Int      @id @default(autoincrement())
   question      String   @db.VarChar(256)
   options       String[]
