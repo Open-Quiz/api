@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import prisma from '../client';
 import IdParam from '../types/idParam';
 import { CreateQuiz } from '../zod';
@@ -20,7 +20,6 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
 }
 
 export async function createQuiz(req: Request<unknown, unknown, CreateQuiz>, res: Response) {
-    console.log(req.body);
     const newQuiz = await prisma.quiz.create({
         data: req.body,
     });

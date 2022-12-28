@@ -4,6 +4,7 @@ import { quizRoutes } from './routes';
 
 // Apply module augmentation
 import './types/response';
+import ErrorHandler from './middleware/errorHandler';
 
 dotenv.config();
 
@@ -14,6 +15,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/api/quizzes', quizRoutes);
+
+app.use(ErrorHandler);
 
 app.listen(port, () => {
     console.log(`⚡[server]: Server is running on port ${port}`);

@@ -1,13 +1,19 @@
 import { response } from 'express';
 
+export interface BadRequestError {
+    path: string;
+    message: string;
+}
+
 declare module 'express-serve-static-core' {
     export interface Response {
         ok(body: any): void;
         created(body: any): void;
-        badRequest(error: string): void;
+        badRequest(errors: BadRequestError[]): void;
         unauthorized(error: string): void;
         forbidden(error: string): void;
         notFound(error: string): void;
+        internalServerError(error: string): void;
     }
 }
 
@@ -19,8 +25,8 @@ response.created = function (body) {
     this.status(201).json(body);
 };
 
-response.badRequest = function (error) {
-    this.status(400).json({ error });
+response.badRequest = function (errors) {
+    this.status(400).json({ errors });
 };
 
 response.unauthorized = function (error) {
@@ -33,4 +39,8 @@ response.forbidden = function (error) {
 
 response.notFound = function (error) {
     this.status(404).json({ error });
+};
+
+response.internalServerError = function (error) {
+    this.status(500).json({ error });
 };
