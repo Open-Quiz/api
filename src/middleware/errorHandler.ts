@@ -6,7 +6,7 @@ import { BadRequestError } from '../types/response';
 // have 4 parameters.
 export default function ErrorHandler(err: Error | ZodError, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ZodError) {
-        res.badRequest(err.errors.map(parseZodIssue));
+        return res.badRequest(err.errors.map(parseZodIssue));
     }
 
     res.internalServerError('Something unknown went wrong');

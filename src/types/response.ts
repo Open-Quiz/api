@@ -9,6 +9,7 @@ declare module 'express-serve-static-core' {
     export interface Response {
         ok(body: any): void;
         created(body: any): void;
+        noContent(): void;
         badRequest(errors: BadRequestError[]): void;
         unauthorized(error: string): void;
         forbidden(error: string): void;
@@ -23,6 +24,10 @@ response.ok = function (body) {
 
 response.created = function (body) {
     this.status(201).json(body);
+};
+
+response.noContent = function () {
+    this.sendStatus(204);
 };
 
 response.badRequest = function (errors) {

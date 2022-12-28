@@ -1,7 +1,11 @@
-import { number, object } from 'zod';
+import * as z from 'zod';
 
-const IdModel = object({
-    id: number().int().positive(),
+export const IdModel = z.object({
+    id: z.coerce.number().int().min(1),
 });
 
-export default IdModel;
+export const IdArrayModel = z.object({
+    ids: z.number().int().min(1).array(),
+});
+
+export type IdArray = z.infer<typeof IdArrayModel>;
