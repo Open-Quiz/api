@@ -1,7 +1,7 @@
 import { response } from 'express';
 
 export interface BadRequestError {
-    path: string;
+    path?: string;
     message: string;
 }
 

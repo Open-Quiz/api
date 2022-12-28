@@ -22,12 +22,12 @@ quizRoutes
     .post(validate({ body: CreateQuizModel }), createQuiz);
 
 quizRoutes
+    .route('/bulk')
+    .post(validate({ body: CreateQuizModelArray }), createQuizzes)
+    .delete(validate({ body: IdArrayModel }), deleteQuizzes);
+
+quizRoutes
     .route('/:id')
     .get(validate({ param: IdModel }), getQuiz)
     .patch(validate({ param: IdModel, body: PatchQuizModel }), updateQuiz)
     .delete(validate({ param: IdModel }), deleteQuiz);
-
-quizRoutes
-    .route('/bulk')
-    .post(validate({ body: CreateQuizModelArray }), createQuizzes)
-    .delete(validate({ body: IdArrayModel }), deleteQuizzes);

@@ -13,8 +13,9 @@ export default function ErrorHandler(err: Error | ZodError, req: Request, res: R
 }
 
 function parseZodIssue(issue: ZodIssue): BadRequestError {
+    const path = issue.path.length === 0 ? undefined : issue.path.join('.');
     return {
-        path: issue.path.join('.'),
+        path,
         message: issue.message,
     };
 }
