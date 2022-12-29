@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { quizRoutes } from './routes';
+import { quizQuestionRoutes } from './routes';
 
 // Apply module augmentation
 import './types/response';
@@ -14,7 +14,7 @@ const port = Number(process.env.PORT) || 8000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use('/api/quizzes', quizRoutes);
+app.use('/api/quizzes/questions', quizQuestionRoutes);
 
 app.use(ErrorHandler);
 
