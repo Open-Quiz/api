@@ -13,8 +13,10 @@ datasource db {
 }
 
 model QuizQuestion {
-  id            Int      @id @default(autoincrement())
-  question      String   @db.VarChar(256)
-  options       String[] /// @zod.min(1)
-  correctOption Int      /// @zod.positive()
+  id                     Int      @id @default(autoincrement())
+  question               String   @db.VarChar(256)
+  options                String[] /// @zod.min(1)
+  correctOption          Int      /// @zod.positive()
+  totalCorrectAttempts   Int      @default(0)
+  totalIncorrectAttempts Int      @default(0)
 }

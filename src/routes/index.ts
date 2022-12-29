@@ -7,8 +7,10 @@ import {
     getAllQuizQuestions,
     getQuizQuestion,
     updateQuizQuestion,
+    updateQuizQuestionStats,
 } from '../controllers/quizQuestionController';
 import validate from '../middleware/validationHandler';
+import { AttemptModel } from '../models/zod/attemptModel';
 import { IdModel, IdArrayModel } from '../models/zod/idModel';
 import { CreateQuizQuestionModel, PatchQuizQuestionModel } from '../zod';
 
@@ -31,3 +33,5 @@ quizRoutes
     .get(validate({ param: IdModel }), getQuizQuestion)
     .patch(validate({ param: IdModel, body: PatchQuizQuestionModel }), updateQuizQuestion)
     .delete(validate({ param: IdModel }), deleteQuizQuestion);
+
+quizRoutes.route('/:id/stats').patch(validate({ param: IdModel, body: AttemptModel }), updateQuizQuestionStats);

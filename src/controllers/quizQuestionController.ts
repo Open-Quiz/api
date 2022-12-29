@@ -1,6 +1,7 @@
 import { Prisma, QuizQuestion } from '@prisma/client';
 import { Request, Response } from 'express';
 import prisma from '../client';
+import { Attempt } from '../models/zod/attemptModel';
 import { IdArray } from '../models/zod/idModel';
 import IdParam from '../types/idParam';
 import { DEFAULT } from '../utils/postgres';
@@ -90,4 +91,19 @@ export async function deleteQuizQuestions(req: Request<unknown, unknown, IdArray
     });
 
     res.ok({ deletedCount });
+}
+
+export async function updateQuizQuestionStats(req: Request<IdParam, unknown, Attempt>, res: Response) {
+    await prisma.quizQuestion.update({
+        where: { id: req.params.id },
+        data: req.body.isCorrect
+            ? {
+                  totalCorrectAttempts: { increment: 1 },
+              }
+            : {
+                  totalIncorrectAttempts: { increment: 1 },
+              },
+    });
+
+    res.noContent();
 }
