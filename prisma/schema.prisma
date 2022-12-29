@@ -15,6 +15,6 @@ datasource db {
 model QuizQuestion {
   id            Int      @id @default(autoincrement())
   question      String   @db.VarChar(256)
-  options       String[]
-  correctOption Int      @default(-1)
+  options       String[] /// @zod.min(1)
+  correctOption Int      /// @zod.positive()
 }

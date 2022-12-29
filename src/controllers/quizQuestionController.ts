@@ -23,6 +23,10 @@ export async function getQuizQuestion(req: Request<IdParam>, res: Response) {
 }
 
 export async function createQuizQuestion(req: Request<unknown, unknown, CreateQuizQuestion>, res: Response) {
+    if (req.body.correctOption >= req.body.options.length) {
+        return res.badRequest([{ path: 'correctOption', message: 'The correct option must be an index of options' }]);
+    }
+
     const newQuestion = await prisma.quizQuestion.create({
         data: req.body,
     });
@@ -31,6 +35,17 @@ export async function createQuizQuestion(req: Request<unknown, unknown, CreateQu
 }
 
 export async function createQuizQuestions(req: Request<unknown, unknown, CreateQuizQuestion[]>, res: Response) {
+    const errors = req.body
+        .filter((question) => question.correctOption >= question.options.length)
+        .map((question, index) => ({
+            path: `${index}.correctOption`,
+            message: 'The correct option must be an index of options',
+        }));
+
+    if (errors.length !== 0) {
+        return res.badRequest(errors);
+    }
+
     const values = req.body.map(
         (quiz) => Prisma.sql`(${quiz.question}, ${quiz.options}, ${quiz.correctOption ?? DEFAULT})`,
     );
