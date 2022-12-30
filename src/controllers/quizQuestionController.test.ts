@@ -6,6 +6,7 @@ import { Express } from 'express';
 import { QuizQuestion } from '@prisma/client';
 import { mockQuizQuestion } from '../testing/mocks/mockQuizQuestion';
 import { BadRequestResponse, ErrorResponse } from '../types/response';
+import { CreateQuizQuestion } from '../zod';
 
 vi.mock('../client/instance');
 
@@ -39,7 +40,7 @@ describe('GET /api/quizzes/questions', () => {
     });
 });
 
-describe('GET /api/quizzes/question/:id', () => {
+describe('GET /api/quizzes/questions/:id', () => {
     it('returns the quiz question with the id if it exists', async () => {
         const quizQuestion: QuizQuestion = { id: 1, ...mockQuizQuestion };
 
@@ -61,11 +62,93 @@ describe('GET /api/quizzes/question/:id', () => {
     });
 
     it('returns bad request if the id is not a number', async () => {
-        const res = await request(app).get(`/api/quizzes/questions/abc`);
+        const res = await request(app).get('/api/quizzes/questions/abc');
 
         expect(res.statusCode).toBe(400);
         expect(res.body).toStrictEqual<BadRequestResponse>({
             errors: [{ path: 'id', message: 'Expected number, received nan' }],
+        });
+    });
+
+    it('returns bad request if the id is less than 1', async () => {
+        const res = await request(app).get('/api/quizzes/questions/0');
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toStrictEqual<BadRequestResponse>({
+            errors: [{ path: 'id', message: 'Number must be greater than or equal to 1' }],
+        });
+    });
+});
+
+describe('POST /api/quizzes/questions', () => {
+    const questionAndOptions = {
+        question: 'Test Quiz Question',
+        options: ['A', 'B', 'C'],
+    };
+
+    it('returns the newly created quiz question', async () => {
+        const partialQuizQuestion: CreateQuizQuestion = {
+            correctOption: 1,
+            ...questionAndOptions,
+        };
+        const fullQuizQuestion: QuizQuestion = {
+            id: 1,
+            totalCorrectAttempts: 0,
+            totalIncorrectAttempts: 0,
+            ...partialQuizQuestion,
+        };
+
+        mockPrisma.quizQuestion.create.mockResolvedValue(fullQuizQuestion);
+
+        const res = await request(app).post('/api/quizzes/questions').send(partialQuizQuestion);
+
+        expect(res.statusCode).toBe(201);
+        expect(res.body).toStrictEqual<QuizQuestion>(fullQuizQuestion);
+    });
+
+    it('returns bad request if the correct option is not positive', async () => {
+        const partialQuizQuestion: CreateQuizQuestion = {
+            correctOption: -1,
+            ...questionAndOptions,
+        };
+
+        const res = await request(app).post('/api/quizzes/questions').send(partialQuizQuestion);
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toStrictEqual<BadRequestResponse>({
+            errors: [{ path: 'correctOption', message: 'Number must be greater than 0' }],
+        });
+    });
+
+    it('returns bad request if the correct option is not within the bounds of the options array', async () => {
+        const partialQuizQuestion: CreateQuizQuestion = {
+            correctOption: 3,
+            ...questionAndOptions,
+        };
+
+        const res = await request(app).post('/api/quizzes/questions').send(partialQuizQuestion);
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toStrictEqual<BadRequestResponse>({
+            errors: [{ path: 'correctOption', message: 'The correct option must be an index of options' }],
+        });
+    });
+
+    it('returns bad request if the body contains multiple errors', async () => {
+        const invalidQuizQuestion = {
+            correctOption: 'A',
+            options: 'Test',
+        };
+
+        const res = await request(app).post('/api/quizzes/questions').send(invalidQuizQuestion);
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toStrictEqual<BadRequestResponse>({
+            errors: [
+                { path: 'question', message: 'Required' },
+                { path: 'options', message: 'Expected array, received string' },
+                { path: 'correctOption', message: 'Expected number, received string' },
+            ],
         });
     });
 });
