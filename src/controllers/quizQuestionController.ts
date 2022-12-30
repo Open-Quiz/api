@@ -61,12 +61,16 @@ export async function createQuizQuestions(req: Request<unknown, unknown, CreateQ
 }
 
 export async function updateQuizQuestion(req: Request<IdParam, unknown, PatchQuizQuestion>, res: Response) {
-    const updatedQuestion = await prisma.quizQuestion.update({
-        where: { id: req.params.id },
-        data: req.body,
-    });
+    try {
+        const updatedQuestion = await prisma.quizQuestion.update({
+            where: { id: req.params.id },
+            data: req.body,
+        });
 
-    res.ok(updatedQuestion);
+        res.ok(updatedQuestion);
+    } catch (err) {
+        return res.badRequest([{ path: 'id', message: `There is no quiz question with the id ${req.params.id}` }]);
+    }
 }
 
 export async function deleteQuizQuestion(req: Request<IdParam>, res: Response) {
