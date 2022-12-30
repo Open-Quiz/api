@@ -6,6 +6,7 @@ package-lock.json
 pnpm-lock.yaml
 .yarn-integrity
 .npm*
+yarn-error.log
 
 *.env
 *.env.*

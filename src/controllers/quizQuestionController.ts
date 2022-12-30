@@ -1,6 +1,6 @@
 import { Prisma, QuizQuestion } from '@prisma/client';
 import { Request, Response } from 'express';
-import prisma from '../client';
+import prisma from '../client/instance';
 import { Attempt } from '../models/zod/attemptModel';
 import { IdArray } from '../models/zod/idModel';
 import IdParam from '../types/idParam';
@@ -8,6 +8,7 @@ import { DEFAULT } from '../utils/postgres';
 import { CreateQuizQuestion, PatchQuizQuestion } from '../zod';
 
 export async function getAllQuizQuestions(req: Request, res: Response) {
+    console.log(prisma.quizQuestion);
     const allQuestions = await prisma.quizQuestion.findMany();
 
     res.ok(allQuestions);
