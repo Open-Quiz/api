@@ -15,7 +15,7 @@ export default function createApp(port: number) {
 
     app.use(ErrorHandler);
 
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
         console.log(`⚡[server]: Server is running on port ${port}`);
     });
 

@@ -5,15 +5,47 @@ export interface BadRequestError {
     message: string;
 }
 
+export interface BadRequestResponse {
+    errors: BadRequestError[];
+}
+
+export interface ErrorResponse {
+    error: string;
+}
+
 declare module 'express-serve-static-core' {
     export interface Response {
+        /**
+         * @status 200
+         */
         ok(body: any): void;
+        /**
+         * @status 201
+         */
         created(body: any): void;
+        /**
+         * @status 204
+         */
         noContent(): void;
+        /**
+         * @status 400
+         */
         badRequest(errors: BadRequestError[]): void;
+        /**
+         * @status 401
+         */
         unauthorized(error: string): void;
+        /**
+         * @status 403
+         */
         forbidden(error: string): void;
+        /**
+         * @status 404
+         */
         notFound(error: string): void;
+        /**
+         * @status 500
+         */
         internalServerError(error: string): void;
     }
 }

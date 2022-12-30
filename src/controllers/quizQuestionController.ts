@@ -8,7 +8,6 @@ import { DEFAULT } from '../utils/postgres';
 import { CreateQuizQuestion, PatchQuizQuestion } from '../zod';
 
 export async function getAllQuizQuestions(req: Request, res: Response) {
-    console.log(prisma.quizQuestion);
     const allQuestions = await prisma.quizQuestion.findMany();
 
     res.ok(allQuestions);
