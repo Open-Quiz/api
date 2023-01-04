@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import prisma from '../client/instance';
 import { Attempt } from '../models/zod/attemptModel';
 import { IdArray } from '../models/zod/idModel';
+import { QuizQuestionService } from '../services/QuizQuestionService';
 import IdParam from '../types/idParam';
 import { DEFAULT } from '../utils/postgres';
 import { CreateQuizQuestion, PatchQuizQuestion } from '../zod';
@@ -24,9 +25,8 @@ export async function getQuizQuestion(req: Request<IdParam>, res: Response) {
 }
 
 export async function createQuizQuestion(req: Request<unknown, unknown, CreateQuizQuestion>, res: Response) {
-    if (req.body.correctOption >= req.body.options.length) {
-        return res.badRequest([{ path: 'correctOption', message: 'The correct option must be an index of options' }]);
-    }
+    const error = QuizQuestionService.isInValid(req.body);
+    if (error) return res.badRequest([error]);
 
     const newQuestion = await prisma.quizQuestion.create({
         data: req.body,
