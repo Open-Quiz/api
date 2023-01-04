@@ -6,4 +6,5 @@ export const mockQuizQuestion: Omit<QuizQuestion, 'id'> = {
     correctOption: 1,
     totalCorrectAttempts: 3,
     totalIncorrectAttempts: 1,
+    quizId: 1,
 };

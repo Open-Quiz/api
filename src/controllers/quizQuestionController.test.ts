@@ -84,6 +84,7 @@ describe('POST /api/quizzes/questions', () => {
     const questionAndOptions = {
         question: 'Test Quiz Question',
         options: ['A', 'B', 'C'],
+        quizId: 1,
     };
 
     it('returns the newly created quiz question', async () => {
@@ -148,6 +149,7 @@ describe('POST /api/quizzes/questions', () => {
                 { path: 'question', message: 'Required' },
                 { path: 'options', message: 'Expected array, received string' },
                 { path: 'correctOption', message: 'Expected number, received string' },
+                { path: 'quizId', message: 'Required' },
             ],
         });
     });

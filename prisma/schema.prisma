@@ -19,4 +19,13 @@ model QuizQuestion {
   correctOption          Int      /// @zod.positive()
   totalCorrectAttempts   Int      @default(0)
   totalIncorrectAttempts Int      @default(0)
+  quizId                 Int
+  quiz                   Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model Quiz {
+  id       Int            @id @default(autoincrement())
+  title    String       
+  isPublic Boolean        @default(false)
+  quizzes  QuizQuestion[]
 }
