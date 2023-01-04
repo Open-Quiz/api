@@ -1,10 +1,8 @@
-import { Quiz } from '@prisma/client';
 import { Request, Response } from 'express';
 import prisma from '../client/instance';
 import { CompleteCreateQuiz } from '../models/zod/createQuizModel';
 import { QuizQuestionService } from '../services/QuizQuestionService';
 import IdParam from '../types/idParam';
-import { BadRequestError } from '../types/response';
 import { isNotUndefined } from '../utils/typing';
 
 export async function getAllQuizzes(req: Request, res: Response) {
@@ -49,4 +47,16 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
     });
 
     return res.created(newQuiz);
+}
+
+export async function deleteQuiz(req: Request<IdParam>, res: Response) {
+    try {
+        await prisma.quiz.delete({
+            where: { id: req.params.id },
+        });
+    } catch (err) {
+        return res.notFound(`There is no quiz with the id ${req.params.id}`);
+    }
+
+    res.noContent();
 }
