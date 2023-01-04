@@ -25,7 +25,7 @@ export async function getQuizQuestion(req: Request<IdParam>, res: Response) {
 }
 
 export async function createQuizQuestion(req: Request<unknown, unknown, CreateQuizQuestion>, res: Response) {
-    const error = QuizQuestionService.isInValid(req.body);
+    const error = QuizQuestionService.isInvalid(req.body);
     if (error) return res.badRequest([error]);
 
     const newQuestion = await prisma.quizQuestion.create({
@@ -69,7 +69,7 @@ export async function updateQuizQuestion(req: Request<IdParam, unknown, PatchQui
 
         res.ok(updatedQuestion);
     } catch (err) {
-        return res.badRequest([{ path: 'id', message: `There is no quiz question with the id ${req.params.id}` }]);
+        return res.notFound(`There is no quiz question with the id ${req.params.id}`);
     }
 }
 

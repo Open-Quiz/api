@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createQuiz, deleteQuiz, getAllQuizzes, getQuiz } from '../controllers/quizController';
+import { createQuiz, deleteQuiz, getAllQuizzes, getQuiz, updateQuiz } from '../controllers/quizController';
 import {
     createQuizQuestion,
     createQuizQuestions,
@@ -14,7 +14,7 @@ import validate from '../middleware/validationHandler';
 import { AttemptModel } from '../models/zod/attemptModel';
 import { CompleteCreateQuizModel } from '../models/zod/createQuizModel';
 import { IdModel, IdArrayModel } from '../models/zod/idModel';
-import { CreateQuizQuestionModel, PatchQuizQuestionModel } from '../zod';
+import { CreateQuizQuestionModel, PatchQuizModel, PatchQuizQuestionModel } from '../zod';
 
 export const quizQuestionRoutes = Router();
 export const quizRoutes = Router();
@@ -29,6 +29,7 @@ quizRoutes
 quizRoutes
     .route('/:id')
     .get(validate({ param: IdModel }), getQuiz)
+    .patch(validate({ param: IdModel, body: PatchQuizModel }), updateQuiz)
     .delete(validate({ param: IdModel }), deleteQuiz);
 
 quizQuestionRoutes

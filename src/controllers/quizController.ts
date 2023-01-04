@@ -4,6 +4,7 @@ import { CompleteCreateQuiz } from '../models/zod/createQuizModel';
 import { QuizQuestionService } from '../services/QuizQuestionService';
 import IdParam from '../types/idParam';
 import { isNotUndefined } from '../utils/typing';
+import { PatchQuiz } from '../zod';
 
 export async function getAllQuizzes(req: Request, res: Response) {
     const allQuizzes = await prisma.quiz.findMany();
@@ -25,7 +26,7 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
     const { title, isPublic, quizzes = [] } = req.body;
 
     const errors = quizzes
-        .map(QuizQuestionService.isInValid)
+        .map(QuizQuestionService.isInvalid)
         .map((error, index) => (error ? { ...error, path: `quizzes.${index}.${error.path}` } : undefined))
         .filter(isNotUndefined);
 
@@ -47,6 +48,19 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
     });
 
     return res.created(newQuiz);
+}
+
+export async function updateQuiz(req: Request<IdParam, undefined, PatchQuiz>, res: Response) {
+    try {
+        const updatedQuiz = await prisma.quiz.update({
+            where: { id: req.params.id },
+            data: req.body,
+        });
+
+        res.ok(updatedQuiz);
+    } catch (err) {
+        return res.notFound(`There is no quiz with the id ${req.params.id}`);
+    }
 }
 
 export async function deleteQuiz(req: Request<IdParam>, res: Response) {
