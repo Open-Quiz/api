@@ -11,8 +11,8 @@ export default function createApp(port: number) {
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
 
-    app.use('/api/quizzes', quizRoutes);
     app.use('/api/quizzes/questions', quizQuestionRoutes);
+    app.use('/api/quizzes', quizRoutes);
 
     app.use(ErrorHandler);
 

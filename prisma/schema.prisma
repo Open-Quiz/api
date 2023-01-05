@@ -24,8 +24,8 @@ model QuizQuestion {
 }
 
 model Quiz {
-  id       Int            @id @default(autoincrement())
-  title    String       
-  isPublic Boolean        @default(false)
-  quizzes  QuizQuestion[]
+  id        Int            @id @default(autoincrement())
+  title     String       
+  isPublic  Boolean        @default(false)
+  questions QuizQuestion[]
 }

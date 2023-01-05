@@ -12,7 +12,7 @@ import {
 } from '../controllers/quizQuestionController';
 import validate from '../middleware/validationHandler';
 import { AttemptModel } from '../models/zod/attemptModel';
-import { CompleteCreateQuizModel } from '../models/zod/createQuizModel';
+import { CompleteCreateQuizModel } from '../models/zod/quizModel';
 import { IdModel, IdArrayModel } from '../models/zod/idModel';
 import { CreateQuizQuestionModel, PatchQuizModel, PatchQuizQuestionModel } from '../zod';
 
