@@ -1,6 +1,6 @@
 import request from 'supertest';
 import mockPrisma from '../testing/mocks/mockPrismaClient';
-import { expect, it, describe, vi, afterAll } from 'vitest';
+import { expect, it, describe, vi } from 'vitest';
 import { QuizQuestion } from '@prisma/client';
 import { mockQuizQuestion } from '../testing/mocks/mockQuiz';
 import { BadRequestResponse, ErrorResponse } from '../types/response';
@@ -14,7 +14,7 @@ describe('Quiz Question Controller', () => {
         it('returns all quiz questions', async () => {
             const quizQuestions: QuizQuestion[] = Array(4)
                 .fill({})
-                .map((_, index) => ({ ...mockQuizQuestion, id: index + 1 }));
+                .map((_, index) => ({ ...mockQuizQuestion, id: index + 1, quizId: 1 }));
 
             mockPrisma.quizQuestion.findMany.mockResolvedValue(quizQuestions);
 
@@ -36,7 +36,7 @@ describe('Quiz Question Controller', () => {
 
     describe('GET /api/quizzes/questions/:id', () => {
         it('returns the quiz question with the id if it exists', async () => {
-            const quizQuestion: QuizQuestion = { id: 1, ...mockQuizQuestion };
+            const quizQuestion: QuizQuestion = { ...mockQuizQuestion, id: 1, quizId: 1 };
 
             mockPrisma.quizQuestion.findUnique.mockResolvedValue(quizQuestion);
 
