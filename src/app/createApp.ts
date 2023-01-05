@@ -20,5 +20,5 @@ export default function createApp(port: number) {
         console.log(`⚡[server]: Server is running on port ${port}`);
     });
 
-    return app;
+    return { app, server };
 }

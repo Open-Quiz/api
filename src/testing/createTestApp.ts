@@ -1,11 +1,15 @@
 import { Express } from 'express';
-import { beforeAll } from 'vitest';
+import { Server } from 'http';
+import { afterAll, beforeAll } from 'vitest';
 import createApp from '../app/createApp';
 
 let app: Express;
+let server: Server;
 
 beforeAll(() => {
-    app = createApp(8001);
+    const application = createApp(8001);
+    app = application.app;
+    server = application.server;
 });
 
-export { app };
+export { app, server };

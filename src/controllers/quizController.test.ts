@@ -1,14 +1,18 @@
 import request from 'supertest';
-import { vi, describe, it, expect } from 'vitest';
-import { mockQuiz, mockQuizQuestion, mockQuizQuestions, mockQuizzes } from '../testing/mocks/mockQuiz';
+import { vi, describe, it, expect, afterAll } from 'vitest';
 import mockPrisma from '../client/__mocks__/instance';
 import { CompleteCreateQuiz, CompleteQuiz } from '../models/zod/quizModel';
-import { app } from '../testing/createTestApp';
+import { app, server } from '../testing/createTestApp';
+import { mockQuiz, mockQuizQuestion, mockQuizQuestions, mockQuizzes } from '../testing/mocks/mockQuiz';
 import { BadRequestResponse } from '../types/response';
 
 vi.mock('../client/instance');
 
 describe('Quiz Controller', () => {
+    afterAll(() => {
+        server.close();
+    });
+
     describe('GET /api/quizzes', () => {
         it('returns all the quizzes', async () => {
             const quizzes = mockQuizzes(3);

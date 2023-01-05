@@ -1,15 +1,19 @@
 import request from 'supertest';
 import mockPrisma from '../testing/mocks/mockPrismaClient';
-import { expect, it, describe, vi } from 'vitest';
+import { expect, it, describe, vi, afterAll } from 'vitest';
 import { QuizQuestion } from '@prisma/client';
 import { mockQuizQuestion } from '../testing/mocks/mockQuiz';
 import { BadRequestResponse, ErrorResponse } from '../types/response';
 import { CreateQuizQuestion } from '../zod';
-import { app } from '../testing/createTestApp';
+import { app, server } from '../testing/createTestApp';
 
 vi.mock('../client/instance');
 
 describe('Quiz Question Controller', () => {
+    afterAll(() => {
+        server.close();
+    });
+
     describe('GET /api/quizzes/questions', () => {
         it('returns all quiz questions', async () => {
             const quizQuestions: QuizQuestion[] = Array(4)
