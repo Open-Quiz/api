@@ -6,13 +6,13 @@
     "scripts": {
         "dev": "dotenv -e .env.development nodemon src/index.ts --devmode",
         "start": "node .",
-        "test": "dotenv -e .env.test vitest",
         "prisma:update": "npx prisma db pull && npx prisma generate",
         "postinstall": "npx prisma generate",
         "docker:up": "docker-compose up --detach",
         "docker:down": "docker-compose down",
         "wait:for:it": "wait-for-it.sh localhost:5432",
-        "test:integration": "yarn docker:up && yarn wait:for:it && dotenv -e .env.test yarn prisma migrate deploy && dotenv -e .env.test -- vitest --dir tests/integration --run"
+        "test:integration": "yarn docker:up && yarn wait:for:it && dotenv -e .env.test yarn prisma migrate deploy && dotenv -e .env.test -- vitest --dir tests/integration --run --threads false",
+        "test:unit": "dotenv -e .env.test -- vitest --dir src --threads false"
     },
     "author": "Josh Jeffers",
     "license": "ISC",
