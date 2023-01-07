@@ -5,7 +5,8 @@ import { quizQuestionRoutes, quizRoutes } from '../routes';
 // Apply module augmentation
 import '../types/response';
 
-export default function createApp(port: number) {
+export default function createApp() {
+    const port = Number(process.env.PORT) || 8000;
     const app = express();
 
     app.use(express.json());

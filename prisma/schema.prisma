@@ -20,7 +20,7 @@ model QuizQuestion {
   totalCorrectAttempts   Int      @default(0)
   totalIncorrectAttempts Int      @default(0)
   quizId                 Int
-  quiz                   Quiz     @relation(fields: [quizId], references: [id])
+  quiz                   Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
 }
 
 model Quiz {
