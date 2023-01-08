@@ -36,11 +36,5 @@ jobs:
             - name: 'Grant Execution Permissions To wait-for-it'
               run: 'chmod +x ${PWD}/wait-for-it.sh'
 
-            - name: 'Startup Docker'
-              run: 'yarn docker:up'
-
-            - name: 'Check Running Containers'
-              run: 'docker ps -a'
-
             - name: Run Integration Tests
               run: yarn test:integration
