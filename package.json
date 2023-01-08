@@ -10,7 +10,7 @@
         "postinstall": "npx prisma generate",
         "docker:up": "docker-compose up --detach",
         "docker:down": "docker-compose down",
-        "wait:for:db": "./wait-for-it.sh 0.0.0.0:5432",
+        "wait:for:db": "./wait-for-it.sh localhost:5433",
         "test:integration": "yarn docker:up && yarn wait:for:db && dotenv -e .env.test yarn prisma migrate deploy && yarn test:vitest --dir tests/integration && yarn docker:down",
         "test:unit": "yarn test:vitest --dir src",
         "test:vitest": "dotenv -e .env.test -- vitest --threads false --run"
