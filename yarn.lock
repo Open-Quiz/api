@@ -1759,10 +1759,10 @@ resolve@^1.22.1:
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
-rest-zod-prisma@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/rest-zod-prisma/-/rest-zod-prisma-1.0.4.tgz#bea1036eca9c114c56c9e5db1848cb4d09cc2959"
-  integrity sha512-eQdqQaQh8UtzzNXZKRViLhtZzxWifOSzYAauvedKhTDhAOowIR3S/ZyAOwiZcjlClbKyPLJy4G1w5aXgLozYHQ==
+rest-zod-prisma@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/rest-zod-prisma/-/rest-zod-prisma-1.0.5.tgz#40f84c6f03c66884e35436b03be4da6878490572"
+  integrity sha512-rGgPYs3nXTRcunisWhJYyGHrTXWQCvklQueb6HCLjxzkBive788EWTYy6zDBRq4HikLKW6Nt4pFGFsY8WFjrNg==
   dependencies:
     "@prisma/generator-helper" "~3.8.1"
     parenthesis "^3.1.8"

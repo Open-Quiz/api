@@ -33,7 +33,7 @@
         "nodemon": "^2.0.20",
         "prettier": "^2.8.1",
         "prisma": "^4.8.0",
-        "rest-zod-prisma": "^1.0.4",
+        "rest-zod-prisma": "^1.0.5",
         "supertest": "^6.3.3",
         "ts-jest": "^29.0.3",
         "ts-node": "^10.9.1",
