@@ -1,3 +1,7 @@
+# Open Quiz API
+
+## Development
+
 ## Testing
 
 This projects consists of two types of tests:
@@ -21,9 +25,11 @@ You can run them using `yarn test:unit`. To change the port the API uses refer t
 2. A `.env.test` file:
 
     ```py
-    PORT=8001 # Optional. By default this is 8000. Note that this will also be used for the unit tests.
+    # Optional. By default this is 8000. Note that this will also be used for the unit tests.
+    PORT=8001
 
-    DATABASE_URL="postgresql://prisma:prisma@localhost:5433/tests" # This must match the environment variables in `docker-compose.yml`.
+    # This must match the environment variables in `docker-compose.yml`.
+    DATABASE_URL="postgresql://prisma:prisma@localhost:5433/tests"
     ```
 
 Integration tests are located at `tests/integration` and work by running a test PostgreSQL database in a docker container which is then stopped after the tests have run. This means we don't need to mock `prisma` allowing us to simulate real requests.
