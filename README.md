@@ -1,8 +1,22 @@
-# Open Quiz API
+<h1>Open Quiz API</h1>
+
+## Table of Contents
+- [Table of Contents](#table-of-contents)
+- [About the Project](#about-the-project)
+  - [Technologies](#technologies)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Testing](#testing)
+  - [Unit Tests](#unit-tests)
+  - [Integration Tests](#integration-tests)
+    - [Prerequisites](#prerequisites-1)
+  
+## About the Project
 
 ### Technologies
 
-<div align="center">
+<div style="margin: 10px 0">
     <a href="https://expressjs.com/">
         <img src="https://img.shields.io/badge/express-%23000000.svg?&style=for-the-badge&logo=express&logoColor=white" />
     </a>
@@ -17,7 +31,7 @@
     </a>
 </div>
 
-## Development
+## Getting Started
 
 ### Prerequisites
 
@@ -26,7 +40,7 @@
 3. [Prettier Extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
 4. [ESLint Extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
 
-### Getting Started
+### Installation
 
 1. Download the dependencies using `yarn install`. This automatically generates types for the models and validators at `src/zod`.
 2. Create `.env.development` for the development environment variables:
@@ -76,4 +90,4 @@ Integration tests are located in `tests/integration` and work by running a test 
 You can run them using `yarn test:integration`.
 
 > **Note**  
-> The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is used to make the tests wait for PostgreSQL to be ready to accept connections.
+> The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is necessary to ensure that the tests don't start until PostgreSQL is ready to accept connections.
