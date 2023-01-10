@@ -1,12 +1,6 @@
 name: CI
 
-on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+on: [push]
 
 jobs:
     build:
@@ -30,11 +24,13 @@ jobs:
             - name: Intall Dependencies
               run: yarn install
 
-            - name: Run Unit Tests
-              run: yarn test:unit
-
             - name: 'Grant Execution Permissions To wait-for-it'
               run: 'chmod +x ${PWD}/wait-for-it.sh'
 
-            - name: Run Integration Tests
-              run: yarn test:integration
+            - name: Run Tests With Coverage
+              run: yarn test
+
+            - name: Upload Test Coverage
+              uses: codecov/codecov-action@v3
+              with:
+                  directory: './coverage'
