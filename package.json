@@ -15,7 +15,8 @@
         "test:integration": "yarn docker:up && yarn wait:for:db && yarn test:prisma:migrate && yarn test:vitest --dir tests/integration && yarn docker:down",
         "test:unit": "yarn test:vitest --dir src",
         "test:vitest": "dotenv -e .env.test -- vitest --threads false --run",
-        "test:prisma:migrate": "dotenv -e .env.test yarn prisma migrate deploy"
+        "test:prisma:migrate": "dotenv -e .env.test yarn prisma migrate deploy",
+        "test": "yarn docker:up && yarn wait:for:db && yarn test:prisma:migrate && yarn test:vitest --coverage && yarn docker:down"
     },
     "author": "Josh Jeffers",
     "license": "ISC",
@@ -28,6 +29,7 @@
         "@types/express": "^4.17.15",
         "@types/node": "^18.11.17",
         "@types/supertest": "^2.0.12",
+        "@vitest/coverage-c8": "^0.27.0",
         "dotenv": "^16.0.3",
         "dotenv-cli": "^6.0.0",
         "eslint": "^8.30.0",
