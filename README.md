@@ -1,5 +1,7 @@
 <h1>Open Quiz API</h1>
 
+[![codecov](https://img.shields.io/codecov/c/gh/Open-Quiz/api/main?label=codecov&logo=codecov&style=for-the-badge)](https://codecov.io/gh/Open-Quiz/api)
+
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
 - [About the Project](#about-the-project)
@@ -13,6 +15,8 @@
     - [Prerequisites](#prerequisites-1)
   
 ## About the Project
+
+The Open Quiz API is an open source API which can be used to manage the creating, storing and sharing of quizzes, freeing you to work on bringing your product to life!
 
 ### Technologies
 
