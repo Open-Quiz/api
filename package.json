@@ -1,6 +1,6 @@
 {
     "name": "open-quiz-api",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "description": "The open quiz api",
     "main": "index.js",
     "scripts": {
