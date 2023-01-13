@@ -1,0 +1,27 @@
+name: 'Bug report'
+description: 'If you have found a bug, please report it here.'
+labels: ['bug']
+body:
+    - type: input
+      id: api-version
+      attributes:
+          label: 'Affected Versions'
+          description: 'What versions of the API are affected?'
+          placeholder: 'E.g: > 1.0.0'
+      validations:
+          required: true
+    - type: textarea
+      id: problem
+      attributes:
+          label: 'Problem'
+          description: 'Please describe the problem.'
+      validations:
+          required: true
+    - type: textarea
+      id: solution
+      attributes:
+          label: 'Proposed Solution'
+          description: |
+              'If you have a specific idea about how you would like the solution developed, please describe it here.'
+      validations:
+          required: false
