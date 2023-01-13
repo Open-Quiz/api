@@ -12,12 +12,15 @@
         "docker:up": "docker-compose up --detach",
         "docker:down": "docker-compose down",
         "wait:for:db": "./wait-for-it.sh localhost:5433",
-        "test:integration": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push && yarn test:vitest --dir tests/integration && yarn docker:down",
+        "pretest": "yarn docker:up && yarn wait:for:db test:prisma:push",
+        "test": "yarn test:vitest",
+        "posttest": "yarn docker:down",
+        "test:integration": "yarn test --dir tests/integration",
         "test:unit": "yarn test:vitest --dir src",
         "test:vitest": "dotenv -e .env.test -- vitest --threads false --run",
         "test:prisma:push": "dotenv -e .env.test yarn prisma db push",
-        "test:coverage": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push && yarn test:vitest --coverage && yarn docker:down",
-        "test": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push && yarn test:vitest && yarn docker:down"
+        "test:coverage": "yarn test --coverage"
+
     },
     "author": "Josh Jeffers",
     "license": "ISC",
