@@ -30,7 +30,7 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
 }
 
 export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQuiz>, res: Response) {
-    const { title, isPublic, questions = [] } = req.body;
+    const { ownerId, title, isPublic, questions = [] } = req.body;
 
     const errors = questions
         .map(QuizQuestionService.isInvalid)
@@ -43,6 +43,7 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
 
     const newQuiz = await prisma.quiz.create({
         data: {
+            ownerId,
             title,
             isPublic,
             questions: {

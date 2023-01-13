@@ -7,8 +7,6 @@ export default function ErrorHandler(err: Error | ZodError, req: Request, res: R
     if (err instanceof ZodError) {
         return res.badRequest(err.errors.map(parseZodIssue));
     }
-
-    res.internalServerError('Something unknown went wrong');
 }
 
 function parseZodIssue(issue: ZodIssue): BadRequestError {

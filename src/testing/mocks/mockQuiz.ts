@@ -2,6 +2,7 @@ import { Quiz, QuizQuestion } from '@prisma/client';
 import { CompleteQuiz } from '../../models/zod/quizModel';
 
 export const mockQuiz: Omit<Quiz, 'id'> = {
+    ownerId: 1,
     title: 'Test Quiz',
     isPublic: false,
 };

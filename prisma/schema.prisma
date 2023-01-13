@@ -12,6 +12,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id      Int     @id @default(autoincrement())
+  isBot   Boolean @default(false)
+  quizzes Quiz[]
+}
+
+model Quiz {
+  id        Int            @id @default(autoincrement())
+  ownerId   Int
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title     String       
+  isPublic  Boolean        @default(false)
+  questions QuizQuestion[]
+}
+
 model QuizQuestion {
   id                     Int      @id @default(autoincrement())
   question               String   @db.VarChar(256)
@@ -21,11 +36,4 @@ model QuizQuestion {
   totalIncorrectAttempts Int      @default(0)
   quizId                 Int
   quiz                   Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-}
-
-model Quiz {
-  id        Int            @id @default(autoincrement())
-  title     String       
-  isPublic  Boolean        @default(false)
-  questions QuizQuestion[]
 }

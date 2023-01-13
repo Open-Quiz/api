@@ -16,7 +16,8 @@
         "test:unit": "yarn test:vitest --dir src",
         "test:vitest": "dotenv -e .env.test -- vitest --threads false --run",
         "test:prisma:push": "dotenv -e .env.test yarn prisma db push",
-        "test:coverage": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push && yarn test:vitest --coverage && yarn docker:down"
+        "test:coverage": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push && yarn test:vitest --coverage && yarn docker:down",
+        "test": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push && yarn test:vitest && yarn docker:down"
     },
     "author": "Josh Jeffers",
     "license": "ISC",

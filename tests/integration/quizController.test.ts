@@ -6,6 +6,7 @@ import { mockQuiz, mockQuizQuestion } from '../../src/testing/mocks/mockQuiz';
 import { CompleteCreateQuiz, CompleteQuiz } from '../../src/models/zod/quizModel';
 import { ErrorResponse } from '../../src/types/response';
 import { PatchQuiz } from '../../src/zod';
+import { mockUser } from '../../src/testing/mocks/mockUser';
 
 describe('@integration - Quiz Controller', () => {
     const quiz1: CompleteQuiz = {
@@ -47,6 +48,10 @@ describe('@integration - Quiz Controller', () => {
     });
 
     beforeAll(async () => {
+        await prisma.user.create({
+            data: mockUser,
+        });
+
         await prisma.quiz.createMany({
             data: [mockQuiz, mockQuiz],
         });
