@@ -7,8 +7,9 @@ import { CompleteCreateQuiz, CompleteQuiz } from '../../src/models/zod/quizModel
 import { ErrorResponse } from '../../src/types/expressAugmentation';
 import { PatchQuiz } from '../../src/zod';
 import { mockUser } from '../../src/testing/mocks/mockUser';
+import { TokenService } from '../../src/services/tokenService';
 
-describe('@integration - Quiz Controller', () => {
+describe('@integration - Quiz Controller', async () => {
     const quiz1: CompleteQuiz = {
         ...mockQuiz,
         id: 1,
@@ -36,13 +37,14 @@ describe('@integration - Quiz Controller', () => {
         ],
     };
 
-    afterAll(async () => {
-        server.close();
+    const accessToken = `Bearer ${await TokenService.createAccessToken(1)}`;
 
+    afterAll(async () => {
         const deleteQuestions = prisma.quizQuestion.deleteMany();
         const deleteQuizzes = prisma.quiz.deleteMany();
+        const deleteUsers = prisma.quiz.deleteMany();
 
-        await prisma.$transaction([deleteQuizzes, deleteQuestions]);
+        await prisma.$transaction([deleteUsers, deleteQuizzes, deleteQuestions]);
 
         await prisma.$disconnect();
     });
@@ -69,7 +71,7 @@ describe('@integration - Quiz Controller', () => {
 
     describe('GET /api/quizzes', async () => {
         it('returns all the quizzes in the database', async () => {
-            const res = await request(app).get('/api/quizzes');
+            const res = await request(app).get('/api/quizzes').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<CompleteQuiz[]>([quiz1, quiz2]);
@@ -78,14 +80,14 @@ describe('@integration - Quiz Controller', () => {
 
     describe('GET /api/quizzes/:id', () => {
         it('returns the quiz with the specified id when it exists', async () => {
-            const res = await request(app).get('/api/quizzes/1');
+            const res = await request(app).get('/api/quizzes/1').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<CompleteQuiz>(quiz1);
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const res = await request(app).get('/api/quizzes/3');
+            const res = await request(app).get('/api/quizzes/3').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -100,7 +102,7 @@ describe('@integration - Quiz Controller', () => {
                 ...mockQuiz,
                 questions: [mockQuizQuestion, mockQuizQuestion, mockQuizQuestion],
             };
-            const res = await request(app).post('/api/quizzes').send(postQuiz);
+            const res = await request(app).post('/api/quizzes').send(postQuiz).set('authorization', accessToken);
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<CompleteQuiz>(quiz3);
         });
@@ -112,7 +114,7 @@ describe('@integration - Quiz Controller', () => {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request(app).patch('/api/quizzes/3').send(patchQuiz);
+            const res = await request(app).patch('/api/quizzes/3').send(patchQuiz).set('authorization', accessToken);
 
             quiz3 = { ...quiz3, ...patchQuiz };
 
@@ -125,7 +127,7 @@ describe('@integration - Quiz Controller', () => {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request(app).patch('/api/quizzes/4').send(patchQuiz);
+            const res = await request(app).patch('/api/quizzes/4').send(patchQuiz).set('authorization', accessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -136,7 +138,7 @@ describe('@integration - Quiz Controller', () => {
 
     describe('DELETE /api/quizzes/:id', () => {
         it('deletes the quiz when it exists', async () => {
-            const res = await request(app).delete('/api/quizzes/3');
+            const res = await request(app).delete('/api/quizzes/3').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(204);
             expect(res.body).toStrictEqual({});
@@ -149,7 +151,7 @@ describe('@integration - Quiz Controller', () => {
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const res = await request(app).delete('/api/quizzes/4');
+            const res = await request(app).delete('/api/quizzes/4').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
