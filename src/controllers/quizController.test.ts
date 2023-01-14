@@ -1,16 +1,20 @@
 import request from 'supertest';
-import { vi, describe, it, expect, afterAll } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import mockPrisma from '../client/__mocks__/instance';
 import { CompleteCreateQuiz, CompleteQuiz } from '../models/zod/quizModel';
-import { app, server } from '../testing/createTestApp';
+import { TokenService } from '../services/tokenService';
+import { app } from '../testing/createTestApp';
 import { mockQuiz, mockQuizQuestion, mockQuizQuestions, mockQuizzes } from '../testing/mocks/mockQuiz';
+import { mockUser } from '../testing/mocks/mockUser';
 import { BadRequestResponse } from '../types/expressAugmentation';
 
 vi.mock('../client/instance');
 
-describe('Quiz Controller', () => {
-    afterAll(() => {
-        server.close();
+describe('Quiz Controller', async () => {
+    const authorization = `Bearer ${await TokenService.createAccessToken(1)}`;
+
+    beforeEach(() => {
+        mockPrisma.user.findFirst.mockResolvedValue({ ...mockUser, id: 1 });
     });
 
     describe('GET /api/quizzes', () => {
@@ -19,7 +23,7 @@ describe('Quiz Controller', () => {
 
             mockPrisma.quiz.findMany.mockResolvedValue(quizzes);
 
-            const res = await request(app).get('/api/quizzes');
+            const res = await request(app).get('/api/quizzes').set('authorization', authorization);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<CompleteQuiz[]>(quizzes);
@@ -38,7 +42,7 @@ describe('Quiz Controller', () => {
 
             mockPrisma.quiz.create.mockResolvedValue(createdQuiz);
 
-            const res = await request(app).post('/api/quizzes').send(postQuiz);
+            const res = await request(app).post('/api/quizzes').send(postQuiz).set('authorization', authorization);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual(createdQuiz);
@@ -55,7 +59,7 @@ describe('Quiz Controller', () => {
                 ],
             };
 
-            const res = await request(app).post('/api/quizzes').send(postQuiz);
+            const res = await request(app).post('/api/quizzes').send(postQuiz).set('authorization', authorization);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -78,7 +82,7 @@ describe('Quiz Controller', () => {
                 ],
             };
 
-            const res = await request(app).post('/api/quizzes').send(postQuiz);
+            const res = await request(app).post('/api/quizzes').send(postQuiz).set('authorization', authorization);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({

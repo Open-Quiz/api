@@ -1,17 +1,21 @@
 import request from 'supertest';
 import mockPrisma from '../testing/mocks/mockPrismaClient';
-import { expect, it, describe, vi, afterAll } from 'vitest';
+import { expect, it, describe, vi, beforeEach } from 'vitest';
 import { QuizQuestion } from '@prisma/client';
 import { mockQuizQuestion } from '../testing/mocks/mockQuiz';
 import { BadRequestResponse, ErrorResponse } from '../types/expressAugmentation';
 import { CreateQuizQuestion } from '../zod';
-import { app, server } from '../testing/createTestApp';
+import { app } from '../testing/createTestApp';
+import { TokenService } from '../services/tokenService';
+import { mockUser } from '../testing/mocks/mockUser';
 
 vi.mock('../client/instance');
 
-describe('Quiz Question Controller', () => {
-    afterAll(() => {
-        server.close();
+describe('Quiz Question Controller', async () => {
+    const accessToken = `Bearer ${await TokenService.createAccessToken(1)}`;
+
+    beforeEach(() => {
+        mockPrisma.user.findFirst.mockResolvedValue({ ...mockUser, id: 1 });
     });
 
     describe('GET /api/quizzes/questions', () => {
@@ -22,7 +26,7 @@ describe('Quiz Question Controller', () => {
 
             mockPrisma.quizQuestion.findMany.mockResolvedValue(quizQuestions);
 
-            const res = await request(app).get('/api/quizzes/questions');
+            const res = await request(app).get('/api/quizzes/questions').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizQuestion[]>(quizQuestions);
@@ -31,7 +35,7 @@ describe('Quiz Question Controller', () => {
         it('returns an empty array if there are no quiz questions', async () => {
             mockPrisma.quizQuestion.findMany.mockResolvedValue([]);
 
-            const res = await request(app).get('/api/quizzes/questions');
+            const res = await request(app).get('/api/quizzes/questions').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizQuestion[]>([]);
@@ -44,7 +48,9 @@ describe('Quiz Question Controller', () => {
 
             mockPrisma.quizQuestion.findUnique.mockResolvedValue(quizQuestion);
 
-            const res = await request(app).get(`/api/quizzes/questions/${quizQuestion.id}`);
+            const res = await request(app)
+                .get(`/api/quizzes/questions/${quizQuestion.id}`)
+                .set('authorization', accessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizQuestion>(quizQuestion);
@@ -53,14 +59,14 @@ describe('Quiz Question Controller', () => {
         it('returns not found if there is no quiz question with the id', async () => {
             mockPrisma.quizQuestion.findUnique.mockResolvedValue(null);
 
-            const res = await request(app).get(`/api/quizzes/questions/1`);
+            const res = await request(app).get(`/api/quizzes/questions/1`).set('authorization', accessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({ error: 'There is no quiz question with the id 1' });
         });
 
         it('returns bad request if the id is not a number', async () => {
-            const res = await request(app).get('/api/quizzes/questions/abc');
+            const res = await request(app).get('/api/quizzes/questions/abc').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -69,7 +75,7 @@ describe('Quiz Question Controller', () => {
         });
 
         it('returns bad request if the id is less than 1', async () => {
-            const res = await request(app).get('/api/quizzes/questions/0');
+            const res = await request(app).get('/api/quizzes/questions/0').set('authorization', accessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -99,7 +105,10 @@ describe('Quiz Question Controller', () => {
 
             mockPrisma.quizQuestion.create.mockResolvedValue(fullQuizQuestion);
 
-            const res = await request(app).post('/api/quizzes/questions').send(partialQuizQuestion);
+            const res = await request(app)
+                .post('/api/quizzes/questions')
+                .send(partialQuizQuestion)
+                .set('authorization', accessToken);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<QuizQuestion>(fullQuizQuestion);
@@ -111,7 +120,10 @@ describe('Quiz Question Controller', () => {
                 ...questionAndOptions,
             };
 
-            const res = await request(app).post('/api/quizzes/questions').send(partialQuizQuestion);
+            const res = await request(app)
+                .post('/api/quizzes/questions')
+                .send(partialQuizQuestion)
+                .set('authorization', accessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -125,7 +137,10 @@ describe('Quiz Question Controller', () => {
                 ...questionAndOptions,
             };
 
-            const res = await request(app).post('/api/quizzes/questions').send(partialQuizQuestion);
+            const res = await request(app)
+                .post('/api/quizzes/questions')
+                .send(partialQuizQuestion)
+                .set('authorization', accessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -139,7 +154,10 @@ describe('Quiz Question Controller', () => {
                 options: 'Test',
             };
 
-            const res = await request(app).post('/api/quizzes/questions').send(invalidQuizQuestion);
+            const res = await request(app)
+                .post('/api/quizzes/questions')
+                .send(invalidQuizQuestion)
+                .set('authorization', accessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({

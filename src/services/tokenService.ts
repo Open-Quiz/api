@@ -1,19 +1,36 @@
 import jwt, { JwtPayload, VerifyOptions } from 'jsonwebtoken';
+import InvalidTokenError from '../errors/invalidTokenError';
 
 export namespace TokenService {
-    export async function verify(token: string, options?: VerifyOptions): Promise<JwtPayload> {
+    export async function verifyToken(token: string, options?: VerifyOptions): Promise<JwtPayload> {
         return new Promise((resolve, reject) => {
             jwt.verify(token, process.env.JWT_SECRET, options, (err, payload) => {
                 if (err) {
                     reject(err);
                 } else if (payload === undefined || typeof payload === 'string') {
-                    // I can't find any documentation around what the payload is when it's just a string,
-                    // so for now we'll just consider this an invalid token.
-                    reject(`Expected payload, got ${typeof payload}`);
+                    reject(new InvalidTokenError(`Expected payload to be an object, got ${typeof payload}`));
                 } else {
                     resolve(payload);
                 }
             });
+        });
+    }
+
+    export async function createAccessToken(userId: number): Promise<string> {
+        return new Promise((resolve, reject) => {
+            jwt.sign(
+                {},
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: process.env.JWT_EXPIRES_IN,
+                    subject: userId.toString(),
+                    audience: 'access',
+                },
+                (err, token) => {
+                    if (token) resolve(token);
+                    else reject(err);
+                },
+            );
         });
     }
 }
