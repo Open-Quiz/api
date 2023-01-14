@@ -1,3 +1,4 @@
+import { User } from '@prisma/client';
 import { response } from 'express';
 
 export interface BadRequestError {
@@ -47,6 +48,10 @@ declare module 'express-serve-static-core' {
          * @status 500
          */
         internalServerError(error: string): void;
+    }
+
+    export interface Request {
+        requester: User;
     }
 }
 

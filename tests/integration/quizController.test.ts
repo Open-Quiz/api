@@ -4,7 +4,7 @@ import { afterAll, describe, it, expect, beforeAll } from 'vitest';
 import { app, server } from '../../src/testing/createTestApp';
 import { mockQuiz, mockQuizQuestion } from '../../src/testing/mocks/mockQuiz';
 import { CompleteCreateQuiz, CompleteQuiz } from '../../src/models/zod/quizModel';
-import { ErrorResponse } from '../../src/types/response';
+import { ErrorResponse } from '../../src/types/expressAugmentation';
 import { PatchQuiz } from '../../src/zod';
 import { mockUser } from '../../src/testing/mocks/mockUser';
 

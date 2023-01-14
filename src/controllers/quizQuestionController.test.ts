@@ -3,7 +3,7 @@ import mockPrisma from '../testing/mocks/mockPrismaClient';
 import { expect, it, describe, vi, afterAll } from 'vitest';
 import { QuizQuestion } from '@prisma/client';
 import { mockQuizQuestion } from '../testing/mocks/mockQuiz';
-import { BadRequestResponse, ErrorResponse } from '../types/response';
+import { BadRequestResponse, ErrorResponse } from '../types/expressAugmentation';
 import { CreateQuizQuestion } from '../zod';
 import { app, server } from '../testing/createTestApp';
 

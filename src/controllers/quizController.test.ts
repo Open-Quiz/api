@@ -4,7 +4,7 @@ import mockPrisma from '../client/__mocks__/instance';
 import { CompleteCreateQuiz, CompleteQuiz } from '../models/zod/quizModel';
 import { app, server } from '../testing/createTestApp';
 import { mockQuiz, mockQuizQuestion, mockQuizQuestions, mockQuizzes } from '../testing/mocks/mockQuiz';
-import { BadRequestResponse } from '../types/response';
+import { BadRequestResponse } from '../types/expressAugmentation';
 
 vi.mock('../client/instance');
 

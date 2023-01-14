@@ -3,7 +3,7 @@ import ErrorHandler from '../middleware/errorHandler';
 import { quizQuestionRoutes, quizRoutes } from '../routes';
 
 // Apply module augmentation
-import '../types/response';
+import '../types/expressAugmentation';
 
 export default function createApp() {
     const port = Number(process.env.PORT) || 8000;
