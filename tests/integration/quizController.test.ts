@@ -37,7 +37,7 @@ describe('@integration - Quiz Controller', async () => {
         ],
     };
 
-    const accessToken = `Bearer ${await TokenService.createAccessToken(1)}`;
+    const accessToken = `Bearer ${await TokenService.signAccessToken(1)}`;
 
     afterAll(async () => {
         const deleteQuestions = prisma.quizQuestion.deleteMany();

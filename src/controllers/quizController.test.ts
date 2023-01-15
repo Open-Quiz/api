@@ -11,7 +11,7 @@ import { BadRequestResponse } from '../types/expressAugmentation';
 vi.mock('../client/instance');
 
 describe('Quiz Controller', async () => {
-    const authorization = `Bearer ${await TokenService.createAccessToken(1)}`;
+    const authorization = `Bearer ${await TokenService.signAccessToken(1)}`;
 
     beforeEach(() => {
         mockPrisma.user.findFirst.mockResolvedValue({ ...mockUser, id: 1 });

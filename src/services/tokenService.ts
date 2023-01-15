@@ -1,10 +1,17 @@
-import jwt, { JwtPayload, VerifyOptions } from 'jsonwebtoken';
+import jwt, { JwtPayload, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import InvalidTokenError from '../errors/invalidTokenError';
 
 export namespace TokenService {
+    const Secret = process.env.JWT_SECRET as string;
+
+    export const TokenTypes = {
+        Access: 'access',
+        Refresh: 'refresh',
+    } as const;
+
     export async function verifyToken(token: string, options?: VerifyOptions): Promise<JwtPayload> {
         return new Promise((resolve, reject) => {
-            jwt.verify(token, process.env.JWT_SECRET, options, (err, payload) => {
+            jwt.verify(token, Secret, options, (err, payload) => {
                 if (err) {
                     reject(err);
                 } else if (payload === undefined || typeof payload === 'string') {
@@ -16,15 +23,28 @@ export namespace TokenService {
         });
     }
 
-    export async function createAccessToken(userId: number): Promise<string> {
-        return new Promise((resolve, reject) => {
+    export async function signAccessToken(userId: number) {
+        return signToken(userId, {
+            audience: TokenTypes.Access,
+            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '10d',
+        });
+    }
+
+    export async function signRefreshToken(userId: number) {
+        return signToken(userId, {
+            audience: TokenTypes.Refresh,
+            expiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '30d',
+        });
+    }
+
+    async function signToken(userId: number, options: Omit<SignOptions, 'subject'> = {}) {
+        return new Promise<string>((resolve, reject) => {
             jwt.sign(
                 {},
-                process.env.JWT_SECRET,
+                Secret,
                 {
-                    expiresIn: process.env.JWT_EXPIRES_IN,
+                    ...options,
                     subject: userId.toString(),
-                    audience: 'access',
                 },
                 (err, token) => {
                     if (token) resolve(token);

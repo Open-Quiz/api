@@ -5,8 +5,12 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 import InvalidTokenError from '../errors/invalidTokenError';
 
 export default async function authenticationHandler(req: Request, res: Response, next: NextFunction) {
-    if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+    if (!req.headers.authorization) {
         return res.unauthorized('Missing access token from authorization header');
+    }
+
+    if (!req.headers.authorization.startsWith('Bearer ')) {
+        return res.unauthorized("Access token must be prefixed with 'Bearer '");
     }
 
     // The token is the string that follows 'Bearer '
@@ -15,7 +19,7 @@ export default async function authenticationHandler(req: Request, res: Response,
     try {
         const payload = await TokenService.verifyToken(token);
 
-        if (!payload.aud || payload.aud !== 'access') {
+        if (!payload.aud || payload.aud !== TokenService.TokenTypes.Access) {
             return res.unauthorized('Provided token is not an access token');
         }
 

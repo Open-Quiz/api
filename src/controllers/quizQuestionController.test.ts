@@ -12,7 +12,7 @@ import { mockUser } from '../testing/mocks/mockUser';
 vi.mock('../client/instance');
 
 describe('Quiz Question Controller', async () => {
-    const accessToken = `Bearer ${await TokenService.createAccessToken(1)}`;
+    const accessToken = `Bearer ${await TokenService.signAccessToken(1)}`;
 
     beforeEach(() => {
         mockPrisma.user.findFirst.mockResolvedValue({ ...mockUser, id: 1 });
