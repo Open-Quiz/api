@@ -68,7 +68,7 @@ describe('Authentication Handler', () => {
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
-            error: 'jwt malformed',
+            error: 'Jwt malformed',
         });
     });
 });

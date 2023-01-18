@@ -3,6 +3,7 @@ import { TokenService } from '../services/tokenService';
 import prisma from '../client/instance';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import InvalidTokenError from '../errors/invalidTokenError';
+import { capitalise } from '../utils/string';
 
 export default async function authenticationHandler(req: Request, res: Response, next: NextFunction) {
     if (!req.headers.authorization) {
@@ -47,8 +48,8 @@ export default async function authenticationHandler(req: Request, res: Response,
         req.requester = requester;
         next();
     } catch (err) {
-        if (err instanceof JsonWebTokenError || err instanceof InvalidTokenError) {
-            return res.unauthorized(err.message);
+        if (err instanceof InvalidTokenError || err instanceof JsonWebTokenError) {
+            return res.unauthorized(capitalise(err.message));
         }
         next(err);
     }

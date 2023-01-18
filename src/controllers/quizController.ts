@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../client/instance';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { QuizQuestionService } from '../services/quizQuestionService';
+import { QuizService } from '../services/quizService';
 import IdParam from '../types/idParam';
 import { isNotUndefined } from '../utils/typing';
 import { PatchQuiz } from '../zod';
@@ -9,6 +10,7 @@ import { PatchQuiz } from '../zod';
 export async function getAllQuizzes(req: Request, res: Response) {
     const allQuizzes = await prisma.quiz.findMany({
         include: { questions: true },
+        where: QuizService.whereUserCanAccess(req.requester.id),
     });
 
     return res.ok(allQuizzes);
@@ -26,11 +28,15 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
         return res.notFound(`There is no quiz with the id ${req.params.id}`);
     }
 
+    if (!QuizService.canUserAccess(quiz, req.requester.id)) {
+        return res.forbidden(`You do not have access to the quiz ${quiz.id}`);
+    }
+
     return res.ok(quiz);
 }
 
 export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQuiz>, res: Response) {
-    const { ownerId, title, isPublic, questions = [] } = req.body;
+    const { title, isPublic, questions = [] } = req.body;
 
     const errors = questions
         .map(QuizQuestionService.isInvalid)
@@ -43,7 +49,7 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
 
     const newQuiz = await prisma.quiz.create({
         data: {
-            ownerId,
+            ownerId: req.requester.id,
             title,
             isPublic,
             questions: {
@@ -59,27 +65,43 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
 }
 
 export async function updateQuiz(req: Request<IdParam, undefined, PatchQuiz>, res: Response) {
-    try {
-        const updatedQuiz = await prisma.quiz.update({
-            where: { id: req.params.id },
-            data: req.body,
-            include: { questions: true },
-        });
+    const quiz = await prisma.quiz.findFirst({
+        where: { id: req.params.id },
+    });
 
-        res.ok(updatedQuiz);
-    } catch (err) {
+    if (!quiz) {
         return res.notFound(`There is no quiz with the id ${req.params.id}`);
     }
+
+    if (quiz.ownerId !== req.requester.id) {
+        return res.forbidden('Only the owner can update a quiz');
+    }
+
+    const updatedQuiz = await prisma.quiz.update({
+        where: { id: req.params.id },
+        data: req.body,
+        include: { questions: true },
+    });
+
+    res.ok(updatedQuiz);
 }
 
 export async function deleteQuiz(req: Request<IdParam>, res: Response) {
-    try {
-        await prisma.quiz.delete({
-            where: { id: req.params.id },
-        });
-    } catch (err) {
+    const quiz = await prisma.quiz.findFirst({
+        where: { id: req.params.id },
+    });
+
+    if (!quiz) {
         return res.notFound(`There is no quiz with the id ${req.params.id}`);
     }
+
+    if (quiz.ownerId !== req.requester.id) {
+        return res.forbidden('Only the owner can delete a quiz');
+    }
+
+    await prisma.quiz.delete({
+        where: { id: req.params.id },
+    });
 
     res.noContent();
 }
