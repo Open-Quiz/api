@@ -1,56 +1,36 @@
-import jwt, { JwtPayload, SignOptions, VerifyOptions } from 'jsonwebtoken';
-import InvalidTokenError from '../errors/invalidTokenError';
+import * as jose from 'jose';
+import { ObjectValues } from '../types/utilityTypes';
 
 export namespace TokenService {
-    const Secret = process.env.JWT_SECRET as string;
+    const Secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-    export const TokenTypes = {
+    export const TokenType = {
         Access: 'access',
         Refresh: 'refresh',
     } as const;
 
-    export async function verifyToken(token: string, options?: VerifyOptions): Promise<JwtPayload> {
-        return new Promise((resolve, reject) => {
-            jwt.verify(token, Secret, options, (err, payload) => {
-                if (err) {
-                    reject(err);
-                } else if (payload === undefined || typeof payload === 'string') {
-                    reject(new InvalidTokenError(`Expected payload to be an object, got ${typeof payload}`));
-                } else {
-                    resolve(payload);
-                }
-            });
-        });
+    export type TokenType = ObjectValues<typeof TokenType>;
+
+    export async function verifyToken(token: string, tokenType: TokenType) {
+        const { payload } = await jose.jwtVerify(token, Secret, { audience: tokenType });
+        return payload;
     }
 
     export async function signAccessToken(userId: number) {
-        return signToken(userId, {
-            audience: TokenTypes.Access,
-            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '10d',
-        });
+        return signToken(userId, TokenType.Access, process.env.JWT_ACCESS_EXPIRES_IN ?? '10d');
     }
 
     export async function signRefreshToken(userId: number) {
-        return signToken(userId, {
-            audience: TokenTypes.Refresh,
-            expiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '30d',
-        });
+        return signToken(userId, TokenType.Refresh, process.env.JWT_REFRESH_EXPIRES_IN ?? '30d');
     }
 
-    async function signToken(userId: number, options: Omit<SignOptions, 'subject'> = {}) {
-        return new Promise<string>((resolve, reject) => {
-            jwt.sign(
-                {},
-                Secret,
-                {
-                    ...options,
-                    subject: userId.toString(),
-                },
-                (err, token) => {
-                    if (token) resolve(token);
-                    else reject(err);
-                },
-            );
-        });
+    async function signToken(userId: number, tokenType: TokenType, expiresIn: string) {
+        return await new jose.SignJWT({})
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setSubject(userId.toString())
+            .setAudience(tokenType)
+            .setExpirationTime(expiresIn)
+            .sign(Secret);
     }
 }

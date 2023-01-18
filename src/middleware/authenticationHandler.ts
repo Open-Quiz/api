@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { TokenService } from '../services/tokenService';
-import prisma from '../client/instance';
-import { JsonWebTokenError } from 'jsonwebtoken';
-import InvalidTokenError from '../errors/invalidTokenError';
 import { capitalise } from '../utils/string';
+import * as jose from 'jose';
+import prisma from '../client/instance';
 
 export default async function authenticationHandler(req: Request, res: Response, next: NextFunction) {
     if (!req.headers.authorization) {
@@ -18,11 +17,7 @@ export default async function authenticationHandler(req: Request, res: Response,
     const token = req.headers.authorization.substring('Bearer '.length);
 
     try {
-        const payload = await TokenService.verifyToken(token);
-
-        if (!payload.aud || payload.aud !== TokenService.TokenTypes.Access) {
-            return res.unauthorized('Provided token is not an access token');
-        }
+        const payload = await TokenService.verifyToken(token, TokenService.TokenType.Access);
 
         if (!payload.sub) {
             return res.unauthorized('Access token is missing subject in payload');
@@ -48,9 +43,13 @@ export default async function authenticationHandler(req: Request, res: Response,
         req.requester = requester;
         next();
     } catch (err) {
-        if (err instanceof InvalidTokenError || err instanceof JsonWebTokenError) {
-            return res.unauthorized(capitalise(err.message));
+        if (err instanceof jose.errors.JWTClaimValidationFailed && err.claim === 'aud') {
+            return res.unauthorized('Provided token is not an access token');
         }
+        if (err instanceof jose.errors.JOSEError) {
+            return res.unauthorized(err.message);
+        }
+
         next(err);
     }
 }

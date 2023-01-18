@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import { app } from '../testing/createTestApp';
 import { ErrorResponse } from '../types/expressAugmentation';
 import { TokenService } from '../services/tokenService';
-import jwt from 'jsonwebtoken';
 import mockPrisma from '../client/__mocks__/instance';
+import * as jose from 'jose';
+
+vi.mock('../client/instance');
 
 describe('Authentication Handler', () => {
     it('returns unauthorized request if there is no authorization header', async () => {
@@ -37,10 +39,12 @@ describe('Authentication Handler', () => {
     });
 
     it("returns unauthorized request if the token payload doesn't have a subject", async () => {
-        const token = jwt.sign({}, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
-            audience: TokenService.TokenTypes.Access,
-        });
+        const token = await new jose.SignJWT({})
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setAudience(TokenService.TokenType.Access)
+            .setExpirationTime(process.env.JWT_REFRESH_EXPIRES_IN!)
+            .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
         const res = await request(app).get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
@@ -68,7 +72,7 @@ describe('Authentication Handler', () => {
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
-            error: 'Jwt malformed',
+            error: 'Invalid Compact JWS',
         });
     });
 });
