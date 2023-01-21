@@ -1,16 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
-import request from 'supertest';
-import { app } from '../testing/createTestApp';
+import { describe, expect, it } from 'vitest';
 import { ErrorResponse } from '../types/expressAugmentation';
 import { TokenService } from '../services/tokenService';
-import mockPrisma from '../client/__mocks__/instance';
 import * as jose from 'jose';
+import request from '../testing/request';
 
-vi.mock('../client/instance');
-
-describe('Authentication Handler', () => {
+describe('@Integration - Authentication Handler', () => {
     it('returns unauthorized request if there is no authorization header', async () => {
-        const res = await request(app).get('/api/quizzes');
+        const res = await request.get('/api/quizzes');
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -19,7 +15,7 @@ describe('Authentication Handler', () => {
     });
 
     it("returns unauthorized request if the authorization header doesn't start with 'Bearer '", async () => {
-        const res = await request(app).get('/api/quizzes').set('authorization', 'test');
+        const res = await request.get('/api/quizzes').set('authorization', 'test');
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -30,7 +26,7 @@ describe('Authentication Handler', () => {
     it('returns unauthorized request if the token is not an access token', async () => {
         const token = await TokenService.signRefreshToken(1);
 
-        const res = await request(app).get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -46,7 +42,7 @@ describe('Authentication Handler', () => {
             .setExpirationTime(process.env.JWT_REFRESH_EXPIRES_IN!)
             .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
-        const res = await request(app).get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -55,20 +51,18 @@ describe('Authentication Handler', () => {
     });
 
     it('returns unauthorized request if there is no user associated with the token', async () => {
-        const token = await TokenService.signAccessToken(2);
+        const token = await TokenService.signAccessToken(1);
 
-        mockPrisma.quiz.findFirst.mockResolvedValue(null);
-
-        const res = await request(app).get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
-            error: 'There is no user with the id 2',
+            error: 'There is no user with the id 1',
         });
     });
 
     it('returns unauthorized request if the access token is malformed', async () => {
-        const res = await request(app).get('/api/quizzes').set('authorization', 'Bearer test');
+        const res = await request.get('/api/quizzes').set('authorization', 'Bearer test');
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({

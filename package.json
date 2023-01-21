@@ -13,10 +13,8 @@
         "docker:down": "docker-compose down",
         "wait:for:db": "./wait-for-it.sh localhost:5433",
         "pretest": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push",
-        "test": "yarn test:vitest",
+        "test": "yarn test:vitest || yarn docker:down",
         "posttest": "yarn docker:down",
-        "test:integration": "yarn test --dir tests/integration",
-        "test:unit": "yarn test:vitest --dir src",
         "test:vitest": "dotenv -e .env.test -- vitest --threads false --run",
         "test:prisma:push": "dotenv -e .env.test yarn prisma db push",
         "test:coverage": "yarn test --coverage"
