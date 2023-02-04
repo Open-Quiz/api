@@ -76,33 +76,32 @@ describe('@Integration - Quiz Controller', async () => {
 
     describe('GET /api/quizzes/:id', () => {
         it('returns the quiz with the specified id when it exists', async () => {
-            const res = await request.get(`/api/quizzes/${quiz1.id}`).set('authorization', user1AccessToken);
+            const res = await request.get('/api/quizzes/1').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<CompleteQuiz>(quiz1);
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const id = quiz2.id + 1;
-            const res = await request.get(`/api/quizzes/${id}`).set('authorization', user1AccessToken);
+            const res = await request.get('/api/quizzes/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
-                error: `There is no quiz with the id ${id}`,
+                error: 'There is no quiz with the id 3',
             });
         });
 
         it('returns a forbidden response if you dont have access to the quiz', async () => {
-            const res = await request.get(`/api/quizzes/${quiz1.id}`).set('authorization', user2AccessToken);
+            const res = await request.get('/api/quizzes/1').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
-                error: `You do not have access to the quiz ${quiz1.id}`,
+                error: 'You do not have access to the quiz 1',
             });
         });
 
         it('returns the quiz with the specified id if it is public', async () => {
-            const res = await request.get(`/api/quizzes/${quiz2.id}`).set('authorization', user2AccessToken);
+            const res = await request.get('/api/quizzes/2').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<CompleteQuiz>(quiz2);
@@ -115,10 +114,7 @@ describe('@Integration - Quiz Controller', async () => {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request
-                .patch(`/api/quizzes/${quiz2.id}`)
-                .send(patchQuiz)
-                .set('authorization', user1AccessToken);
+            const res = await request.patch('/api/quizzes/2').send(patchQuiz).set('authorization', user1AccessToken);
 
             quiz2 = { ...quiz2, ...patchQuiz };
 
@@ -131,15 +127,11 @@ describe('@Integration - Quiz Controller', async () => {
                 title: 'Updated Quiz Title',
             };
 
-            const id = quiz2.id + 1;
-            const res = await request
-                .patch(`/api/quizzes/${id}`)
-                .send(patchQuiz)
-                .set('authorization', user1AccessToken);
+            const res = await request.patch('/api/quizzes/3').send(patchQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
-                error: `There is no quiz with the id ${id}`,
+                error: 'There is no quiz with the id 3',
             });
         });
 
@@ -148,10 +140,7 @@ describe('@Integration - Quiz Controller', async () => {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request
-                .patch(`/api/quizzes/${quiz1.id}`)
-                .send(patchQuiz)
-                .set('authorization', user2AccessToken);
+            const res = await request.patch('/api/quizzes/1').send(patchQuiz).set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -168,29 +157,26 @@ describe('@Integration - Quiz Controller', async () => {
             };
             const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
 
-            const expectedQuizId = quiz2.id + 1;
-            const expectedFirstQuestionId = quiz2.questions[quiz2.questions.length - 1].id + 1;
-
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<CompleteQuiz>({
                 ...mockQuiz,
-                id: expectedQuizId,
+                id: 3,
                 ownerId: user1.id,
                 questions: [
                     {
                         ...mockQuizQuestion,
-                        id: expectedFirstQuestionId,
-                        quizId: expectedQuizId,
+                        id: 6,
+                        quizId: 3,
                     },
                     {
                         ...mockQuizQuestion,
-                        id: expectedFirstQuestionId + 1,
-                        quizId: expectedQuizId,
+                        id: 7,
+                        quizId: 3,
                     },
                     {
                         ...mockQuizQuestion,
-                        id: expectedFirstQuestionId + 2,
-                        quizId: expectedQuizId,
+                        id: 8,
+                        quizId: 3,
                     },
                 ],
             });
@@ -199,35 +185,33 @@ describe('@Integration - Quiz Controller', async () => {
 
     describe('DELETE /api/quizzes/:id', () => {
         it('deletes the quiz when it exists', async () => {
-            const id = quiz2.id + 1;
-            const res = await request.delete(`/api/quizzes/${id}`).set('authorization', user1AccessToken);
+            const res = await request.delete('/api/quizzes/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(204);
             expect(res.body).toStrictEqual({});
 
             const quiz3 = await prisma.quiz.findFirst({
-                where: { id: id },
+                where: { id: 3 },
             });
 
             expect(quiz3).toBeNull();
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const id = quiz2.id + 1;
-            const res = await request.delete(`/api/quizzes/${id}`).set('authorization', user1AccessToken);
+            const res = await request.delete('/api/quizzes/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
-                error: `There is no quiz with the id ${id}`,
+                error: 'There is no quiz with the id 3',
             });
         });
 
         it('returns a forbidden response if you are not the owner of the quiz', async () => {
-            const res = await request.delete(`/api/quizzes/${quiz1.id}`).set('authorization', user2AccessToken);
+            const res = await request.delete('/api/quizzes/1').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
-                error: `Only the owner can delete a quiz`,
+                error: 'Only the owner can delete a quiz',
             });
         });
     });
