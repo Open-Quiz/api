@@ -11,7 +11,6 @@
   - [Installation](#installation)
 - [Testing](#testing)
   - [Prerequisites](#prerequisites-1)
-  - [Unit Tests](#unit-tests)
   - [Integration Tests](#integration-tests)
   - [Test Coverage](#test-coverage)
   
@@ -61,11 +60,6 @@ The Open Quiz API is an open source API which can be used to manage the creating
 
 ## Testing
 
-This projects consists of two types of tests:
-
-1. [Unit Tests](#unit-tests).
-2. [Integration Tests](#integration-tests).
-
 ### Prerequisites
 
 1. [Docker Compose](https://docs.docker.com/compose/install/).
@@ -81,24 +75,17 @@ This projects consists of two types of tests:
     DATABASE_URL="postgresql://prisma:prisma@localhost:5433/tests"
     ```
 
-The tests are written using [Vitest](https://vitest.dev/). You'll notice that they are run with the `--threads false` flag. This is to prevent test suites from being run concurrently and multiple instances of the API each trying to bind to the same port.
-
-### Unit Tests
-
-The unit tests are located throughout the `src` folder and test the api by mocking the return values from `prisma`. This is ideal for testing non-database specific logic such as validation, etc.
-
-You can run these tests using `yarn test:unit`. To change the port the API uses refer to the example [.env.test](#prerequisites) file.
-
 ### Integration Tests
 
+The tests are written using [Vitest](https://vitest.dev/). You'll notice that they are run with the `--threads false` flag. This is to prevent test suites from being run concurrently and attempting to access the `prisma` instant at the same time.
 
-Integration tests are located in `tests/integration` and work by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests.
+We use integration tests by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
 
-You can run them using `yarn test:integration`.
+The tests can be run using `yarn test`.
 
 > **Note**  
 > The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is necessary to ensure that the tests don't start until PostgreSQL is ready to accept connections.
 
 ### Test Coverage
 
-You can run all the tests in order to determine the test coverage with `yarn test:coverage`. This runs both the integration tests and the unit tests together.
+You can run all the tests with coverage using `yarn test:coverage`.
