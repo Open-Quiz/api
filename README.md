@@ -1,9 +1,8 @@
-<h1>Open Quiz API</h1>
+# Open Quiz API <!-- omit in toc -->
 
 [![codecov](https://img.shields.io/codecov/c/gh/Open-Quiz/api/main?label=codecov&logo=codecov&style=for-the-badge)](https://codecov.io/gh/Open-Quiz/api)
 
-## Table of Contents
-- [Table of Contents](#table-of-contents)
+## Table of Contents <!-- omit in toc -->
 - [About the Project](#about-the-project)
   - [Technologies](#technologies)
 - [Getting Started](#getting-started)

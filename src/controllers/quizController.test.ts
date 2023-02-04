@@ -162,6 +162,7 @@ describe('@Integration - Quiz Controller', async () => {
                 ...mockQuiz,
                 id: 3,
                 ownerId: user1.id,
+                sharedWithUserIds: [],
                 questions: [
                     {
                         ...mockQuizQuestion,

@@ -1,7 +1,7 @@
 import { Quiz, QuizQuestion } from '@prisma/client';
 import { CompleteQuiz } from '../../models/zod/quizModel';
 
-export const mockQuiz: Omit<Quiz, 'id' | 'ownerId'> = {
+export const mockQuiz: Omit<Quiz, 'id' | 'ownerId' | 'sharedWithUserIds'> = {
     title: 'Test Quiz',
     isPublic: false,
 };
