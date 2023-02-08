@@ -14,7 +14,7 @@
         "wait:for:db": "./wait-for-it.sh localhost:5433",
         "pretest": "yarn docker:up && yarn wait:for:db && yarn test:prisma:push",
         "test": "yarn test:vitest || yarn docker:down",
-        "test:ci": "yarn test:vitest",
+        "test:ci": "yarn docker:up && yarn test:prisma:push && yarn test:vitest",
         "posttest": "yarn docker:down",
         "test:vitest": "dotenv -e .env.test -- vitest --threads false --run",
         "test:prisma:push": "dotenv -e .env.test yarn prisma db push",
