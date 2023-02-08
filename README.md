@@ -69,8 +69,7 @@ The Open Quiz API is an open source API which can be used to manage the creating
     PORT=8001
 
     # This is not required for running the unit tests. It must match the
-    # environment variables in `docker-compose.yml`, The host and ip must
-    # also match the `wait-for-db` package.json script.
+    # environment variables in `docker-compose.yml`.
     DATABASE_URL="postgresql://prisma:prisma@localhost:5433/tests"
     ```
 
@@ -81,9 +80,6 @@ The tests are written using [Vitest](https://vitest.dev/). You'll notice that th
 We use integration tests by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
 
 The tests can be run using `yarn test`.
-
-> **Note**  
-> The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is necessary to ensure that the tests don't start until PostgreSQL is ready to accept connections.  This is because Prisma instantly tries to connect once the API begins starting and fails if the database is not yet ready for connections.
 
 ### Test Coverage
 
