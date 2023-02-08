@@ -83,7 +83,7 @@ We use integration tests by running a test PostgreSQL database in a docker conta
 The tests can be run using `yarn test`.
 
 > **Note**  
-> The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is necessary to ensure that the tests don't start until PostgreSQL is ready to accept connections.
+> The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is necessary to ensure that the tests don't start until PostgreSQL is ready to accept connections.  This is because Prisma instantly tries to connect once the API begins starting and fails if the database is not yet ready for connections.
 
 ### Test Coverage
 
