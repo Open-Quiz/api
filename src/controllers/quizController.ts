@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../client/instance';
+import quizDto from '../models/dtos/quizDto';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { QuizQuestionService } from '../services/quizQuestionService';
 import { QuizService } from '../services/quizService';
@@ -61,7 +62,8 @@ export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQu
         include: { questions: true },
     });
 
-    return res.created(newQuiz);
+    const newQuizDto = quizDto(newQuiz);
+    return res.created(newQuizDto);
 }
 
 export async function updateQuiz(req: Request<IdParam, undefined, PatchQuiz>, res: Response) {
