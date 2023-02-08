@@ -1,19 +1,20 @@
 import prisma from '../client/instance';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mockQuiz, mockQuizQuestion } from '../testing/mocks/mockQuiz';
-import { CompleteCreateQuiz, CompleteQuiz } from '../models/zod/quizModel';
+import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { ErrorResponse } from '../types/expressAugmentation';
 import { PatchQuiz } from '../zod';
 import { mockUser } from '../testing/mocks/mockUser';
 import { TokenService } from '../services/tokenService';
 import request from '../testing/request';
 import { User } from '@prisma/client';
+import quizDto, { QuizDto } from '../models/dtos/quizDto';
 
 describe('@Integration - Quiz Controller', async () => {
     let user1: User;
     let user2: User;
-    let quiz1: CompleteQuiz;
-    let quiz2: CompleteQuiz;
+    let quiz1: QuizDto;
+    let quiz2: QuizDto;
 
     let user1AccessToken: string;
     let user2AccessToken: string;
@@ -30,32 +31,36 @@ describe('@Integration - Quiz Controller', async () => {
         user1AccessToken = `Bearer ${await TokenService.signAccessToken(user1.id)}`;
         user2AccessToken = `Bearer ${await TokenService.signAccessToken(user2.id)}`;
 
-        quiz1 = await prisma.quiz.create({
-            data: {
-                ...mockQuiz,
-                ownerId: user1.id,
-                questions: {
-                    createMany: {
-                        data: [mockQuizQuestion, mockQuizQuestion],
+        quiz1 = quizDto(
+            await prisma.quiz.create({
+                data: {
+                    ...mockQuiz,
+                    ownerId: user1.id,
+                    questions: {
+                        createMany: {
+                            data: [mockQuizQuestion, mockQuizQuestion],
+                        },
                     },
                 },
-            },
-            include: { questions: true },
-        });
+                include: { questions: true },
+            }),
+        );
 
-        quiz2 = await prisma.quiz.create({
-            data: {
-                ...mockQuiz,
-                isPublic: true,
-                ownerId: user1.id,
-                questions: {
-                    createMany: {
-                        data: [mockQuizQuestion, mockQuizQuestion, mockQuizQuestion],
+        quiz2 = quizDto(
+            await prisma.quiz.create({
+                data: {
+                    ...mockQuiz,
+                    isPublic: true,
+                    ownerId: user1.id,
+                    questions: {
+                        createMany: {
+                            data: [mockQuizQuestion, mockQuizQuestion, mockQuizQuestion],
+                        },
                     },
                 },
-            },
-            include: { questions: true },
-        });
+                include: { questions: true },
+            }),
+        );
     });
 
     describe('GET /api/quizzes', async () => {
@@ -63,14 +68,14 @@ describe('@Integration - Quiz Controller', async () => {
             const res = await request.get('/api/quizzes').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
-            expect(res.body).toStrictEqual<CompleteQuiz[]>([quiz1, quiz2]);
+            expect(res.body).toStrictEqual<QuizDto[]>([quiz1, quiz2]);
         });
 
         it('returns the public quiz created by the other user', async () => {
             const res = await request.get('/api/quizzes').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(200);
-            expect(res.body).toStrictEqual<CompleteQuiz[]>([quiz2]);
+            expect(res.body).toStrictEqual<QuizDto[]>([quiz2]);
         });
     });
 
@@ -79,7 +84,7 @@ describe('@Integration - Quiz Controller', async () => {
             const res = await request.get('/api/quizzes/1').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
-            expect(res.body).toStrictEqual<CompleteQuiz>(quiz1);
+            expect(res.body).toStrictEqual<QuizDto>(quiz1);
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
@@ -104,7 +109,7 @@ describe('@Integration - Quiz Controller', async () => {
             const res = await request.get('/api/quizzes/2').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(200);
-            expect(res.body).toStrictEqual<CompleteQuiz>(quiz2);
+            expect(res.body).toStrictEqual<QuizDto>(quiz2);
         });
     });
 
@@ -119,7 +124,7 @@ describe('@Integration - Quiz Controller', async () => {
             quiz2 = { ...quiz2, ...patchQuiz };
 
             expect(res.statusCode).toBe(200);
-            expect(res.body).toStrictEqual<CompleteQuiz>(quiz2);
+            expect(res.body).toStrictEqual<QuizDto>(quiz2);
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
@@ -158,7 +163,7 @@ describe('@Integration - Quiz Controller', async () => {
             const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(201);
-            expect(res.body).toStrictEqual<CompleteQuiz>({
+            expect(res.body).toStrictEqual<QuizDto>({
                 ...mockQuiz,
                 id: 3,
                 ownerId: user1.id,
@@ -167,17 +172,14 @@ describe('@Integration - Quiz Controller', async () => {
                     {
                         ...mockQuizQuestion,
                         id: 6,
-                        quizId: 3,
                     },
                     {
                         ...mockQuizQuestion,
                         id: 7,
-                        quizId: 3,
                     },
                     {
                         ...mockQuizQuestion,
                         id: 8,
-                        quizId: 3,
                     },
                 ],
             });

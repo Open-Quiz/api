@@ -14,7 +14,8 @@ export async function getAllQuizzes(req: Request, res: Response) {
         where: QuizService.whereUserCanAccess(req.requester.id),
     });
 
-    return res.ok(allQuizzes);
+    const quizDtos = allQuizzes.map(quizDto);
+    return res.ok(quizDtos);
 }
 
 export async function getQuiz(req: Request<IdParam>, res: Response) {
@@ -33,7 +34,7 @@ export async function getQuiz(req: Request<IdParam>, res: Response) {
         return res.forbidden(`You do not have access to the quiz ${quiz.id}`);
     }
 
-    return res.ok(quiz);
+    return res.ok(quizDto(quiz));
 }
 
 export async function createQuiz(req: Request<unknown, unknown, CompleteCreateQuiz>, res: Response) {
@@ -85,7 +86,8 @@ export async function updateQuiz(req: Request<IdParam, undefined, PatchQuiz>, re
         include: { questions: true },
     });
 
-    res.ok(updatedQuiz);
+    const updatedQuizDto = quizDto(updatedQuiz);
+    res.ok(updatedQuizDto);
 }
 
 export async function deleteQuiz(req: Request<IdParam>, res: Response) {
