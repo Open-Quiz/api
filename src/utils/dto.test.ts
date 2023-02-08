@@ -1,0 +1,51 @@
+import { describe, it, expect } from 'vitest';
+import DTO from './dto';
+
+describe('@Unit - DTO', () => {
+    const startingObject = {
+        a: 'A',
+        b: { a: 'BA', b: 'BB' },
+    };
+
+    it('Excludes the field from the resulting object', () => {
+        const dto = new DTO(startingObject).exclude('b').build();
+
+        expect(dto).toStrictEqual({ a: 'A' });
+    });
+
+    it('Maps the object to the resulting type', () => {
+        const dto = new DTO(startingObject).map((obj) => ({ ...obj, c: 'C' })).build();
+
+        expect(dto).toStrictEqual({
+            a: 'A',
+            b: { a: 'BA', b: 'BB' },
+            c: 'C',
+        });
+    });
+
+    it("Doesn't modify the starting object when mapping it", () => {
+        const dto = new DTO(startingObject)
+            .map((obj) => {
+                delete (obj as any).a;
+                return obj;
+            })
+            .build();
+
+        expect(dto).toStrictEqual({
+            b: { a: 'BA', b: 'BB' },
+        });
+        expect(startingObject).toStrictEqual({
+            a: 'A',
+            b: { a: 'BA', b: 'BB' },
+        });
+    });
+
+    it('Selects the field and allows it to be modified', () => {
+        const dto = new DTO(startingObject).select('b', (b) => b.exclude('a').map((b) => ({ ...b, c: 'BC' }))).build();
+
+        expect(dto).toStrictEqual({
+            a: 'A',
+            b: { b: 'BB', c: 'BC' },
+        });
+    });
+});
