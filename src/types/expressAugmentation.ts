@@ -1,13 +1,13 @@
 import { User } from '@prisma/client';
 import { response } from 'express';
 
-export interface BadRequestError {
+export interface BadRequestErrorMessage {
     path?: string;
     message: string;
 }
 
 export interface BadRequestResponse {
-    errors: BadRequestError[];
+    errors: BadRequestErrorMessage[];
 }
 
 export interface ErrorResponse {
@@ -31,7 +31,7 @@ declare module 'express-serve-static-core' {
         /**
          * @status 400
          */
-        badRequest(errors: BadRequestError[]): void;
+        badRequest(errors: BadRequestErrorMessage[]): void;
         /**
          * @status 401
          */

@@ -5,6 +5,5 @@ declare namespace NodeJS {
         JWT_ACCESS_EXPIRES_IN?: string;
         JWT_REFRESH_EXPIRES_IN?: string;
         JWT_SECRET: string;
-        TEST_TYPE?: 'unit' | 'integration';
     }
 }

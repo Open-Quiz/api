@@ -1,4 +1,4 @@
-import { afterAll, afterEach } from 'vitest';
+import { afterAll } from 'vitest';
 import prisma from '../client/instance';
 
 afterAll(async () => {
