@@ -7,7 +7,7 @@ describe('@Unit - DTO', () => {
         b: { a: 'BA', b: 'BB' },
     };
 
-    it('Excludes the field from the resulting object', () => {
+    it('Excludes the key from the resulting object', () => {
         const dto = new DTO(startingObject).exclude('b').build();
 
         expect(dto).toStrictEqual({ a: 'A' });
@@ -40,12 +40,30 @@ describe('@Unit - DTO', () => {
         });
     });
 
-    it('Selects the field and allows it to be modified', () => {
+    it('Selects the key and allows it to be modified', () => {
         const dto = new DTO(startingObject).select('b', (b) => b.exclude('a').map((b) => ({ ...b, c: 'BC' }))).build();
 
         expect(dto).toStrictEqual({
             a: 'A',
             b: { b: 'BB', c: 'BC' },
         });
+    });
+
+    it('Applies the modification to each element in an array when using selectEach', () => {
+        const startingObject = {
+            a: 'A',
+            b: ['BA', 'BB'],
+        };
+
+        const dto = new DTO(startingObject).selectEach('b', (b) => b.map((element) => element + 'C')).build();
+
+        expect(dto).toStrictEqual({
+            a: 'A',
+            b: ['BAC', 'BBC'],
+        });
+    });
+
+    it('Throws an error if you try and use selectEach on a non-array key value', () => {
+        expect(() => new DTO(startingObject).selectEach('a', (a) => a).build()).toThrowError();
     });
 });

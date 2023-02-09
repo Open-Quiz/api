@@ -28,7 +28,8 @@ export default class DTO<InstanceType> {
     }
 
     public map<ReturnType>(mapper: (instance: InstanceType) => ReturnType): DTO<ReturnType> {
-        return new DTO(mapper({ ...this.instance }));
+        const newInstance = typeof this.instance === 'object' ? mapper({ ...this.instance }) : mapper(this.instance);
+        return new DTO(newInstance);
     }
 
     public select<
