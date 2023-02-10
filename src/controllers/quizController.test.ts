@@ -2,7 +2,7 @@ import prisma from '../client/instance';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mockQuiz, mockQuizQuestion } from '../testing/mocks/mockQuiz';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
-import { ErrorResponse } from '../types/expressAugmentation';
+import { BadRequestResponse, ErrorResponse } from '../types/expressAugmentation';
 import { PatchQuiz } from '../zod';
 import { mockUser } from '../testing/mocks/mockUser';
 import { TokenService } from '../services/tokenService';
@@ -13,11 +13,13 @@ import quizDto, { QuizDto } from '../models/dtos/quizDto';
 describe('@Integration - Quiz Controller', async () => {
     let user1: User;
     let user2: User;
+    let user3: User;
     let quiz1: QuizDto;
     let quiz2: QuizDto;
 
     let user1AccessToken: string;
     let user2AccessToken: string;
+    let user3AccessToken: string;
 
     beforeAll(async () => {
         user1 = await prisma.user.create({
@@ -28,8 +30,13 @@ describe('@Integration - Quiz Controller', async () => {
             data: mockUser,
         });
 
+        user3 = await prisma.user.create({
+            data: mockUser,
+        });
+
         user1AccessToken = `Bearer ${await TokenService.signAccessToken(user1.id)}`;
         user2AccessToken = `Bearer ${await TokenService.signAccessToken(user2.id)}`;
+        user3AccessToken = `Bearer ${await TokenService.signAccessToken(user3.id)}`;
 
         quiz1 = quizDto(
             await prisma.quiz.create({
@@ -41,6 +48,7 @@ describe('@Integration - Quiz Controller', async () => {
                             data: [mockQuizQuestion, mockQuizQuestion],
                         },
                     },
+                    sharedWithUserIds: [user3.id],
                 },
                 include: { questions: true },
             }),
@@ -77,6 +85,13 @@ describe('@Integration - Quiz Controller', async () => {
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto[]>([quiz2]);
         });
+
+        it('returns the quizzes shared with the user and public quizzes', async () => {
+            const res = await request.get('/api/quizzes').set('authorization', user3AccessToken);
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body).toStrictEqual<QuizDto[]>([quiz1, quiz2]);
+        });
     });
 
     describe('GET /api/quizzes/:id', () => {
@@ -110,6 +125,13 @@ describe('@Integration - Quiz Controller', async () => {
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto>(quiz2);
+        });
+
+        it('returns the quiz with the specified id if it is shared with the user', async () => {
+            const res = await request.get('/api/quizzes/1').set('authorization', user3AccessToken);
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body).toStrictEqual<QuizDto>(quiz1);
         });
     });
 
@@ -152,6 +174,19 @@ describe('@Integration - Quiz Controller', async () => {
                 error: 'Only the owner can update a quiz',
             });
         });
+
+        it('returns a bad request response if the shared with user ids dont exist', async () => {
+            const patchQuiz: PatchQuiz = {
+                sharedWithUserIds: [4, 5],
+            };
+
+            const res = await request.patch('/api/quizzes/1').send(patchQuiz).set('authorization', user1AccessToken);
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body).toStrictEqual<BadRequestResponse>({
+                errors: [{ path: 'sharedWithUserIds', message: `The user ids 4,5 don't exist` }],
+            });
+        });
     });
 
     describe('POST /api/quizzes', async () => {
@@ -182,6 +217,38 @@ describe('@Integration - Quiz Controller', async () => {
                         id: 8,
                     },
                 ],
+            });
+        });
+
+        it('removes duplicates and the owner id from the shared with user ids', async () => {
+            const postQuiz: CompleteCreateQuiz = {
+                ...mockQuiz,
+                sharedWithUserIds: [1, 2, 2, 3],
+            };
+
+            const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
+
+            expect(res.statusCode).toBe(201);
+            expect(res.body).toStrictEqual<QuizDto>({
+                ...mockQuiz,
+                id: 4,
+                ownerId: user1.id,
+                sharedWithUserIds: [2, 3],
+                questions: [],
+            });
+        });
+
+        it('returns a bad request response if the shared with user ids dont exist', async () => {
+            const postQuiz: CompleteCreateQuiz = {
+                ...mockQuiz,
+                sharedWithUserIds: [4],
+            };
+
+            const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body).toStrictEqual<BadRequestResponse>({
+                errors: [{ path: 'sharedWithUserIds', message: `The user ids 4 don't exist` }],
             });
         });
     });
