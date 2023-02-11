@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { TokenService } from '../services/tokenService';
-import { capitalise } from '../utils/string';
 import * as jose from 'jose';
 import prisma from '../client/instance';
 
