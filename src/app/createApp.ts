@@ -1,9 +1,7 @@
 import express from 'express';
-import prisma from '../client/instance';
 import authenticationHandler from '../middleware/authenticationHandler';
 import ErrorHandler from '../middleware/errorHandler';
 import { quizQuestionRoutes, quizRoutes } from '../routes';
-import { TokenService } from '../services/tokenService';
 
 // Apply module augmentation
 import '../types/expressAugmentation';
