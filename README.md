@@ -11,6 +11,7 @@
 - [Testing](#testing)
   - [Prerequisites](#prerequisites-1)
   - [Integration Tests](#integration-tests)
+  - [Unit Tests](#unit-tests)
   - [Test Coverage](#test-coverage)
   
 ## About the Project
@@ -59,6 +60,15 @@ The Open Quiz API is an open source API which can be used to manage the creating
 
 ## Testing
 
+This projects consists of two types of tests:
+
+1. [Unit Tests](#unit-tests).
+2. [Integration Tests](#integration-tests).
+
+The tests are written using [Vitest](https://vitest.dev/). You'll notice that they are run with the `--threads false` flag. This is to prevent test suites from being run concurrently and attempting to access the `prisma` instant at the same time.
+
+The tests can be run using `yarn test`.
+
 ### Prerequisites
 
 1. [Docker Compose](https://docs.docker.com/compose/install/).
@@ -75,11 +85,12 @@ The Open Quiz API is an open source API which can be used to manage the creating
 
 ### Integration Tests
 
-The tests are written using [Vitest](https://vitest.dev/). You'll notice that they are run with the `--threads false` flag. This is to prevent test suites from being run concurrently and attempting to access the `prisma` instant at the same time.
+Integration tests are defined by the `@Integration` prefix in their suite descriptions. This allows us to perform the appropriate database cleanup after each suite has run. Integration tests work by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
 
-We use integration tests by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
+### Unit Tests
 
-The tests can be run using `yarn test`.
+Unit Tests are distinguished by the `@Unit` prefix in their suite descriptions. They should be used when testing parts of the API separate from other implementations.
+
 
 ### Test Coverage
 
