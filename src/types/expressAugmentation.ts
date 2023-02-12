@@ -1,12 +1,13 @@
+import { User } from '@prisma/client';
 import { response } from 'express';
 
-export interface BadRequestError {
+export interface BadRequestErrorMessage {
     path?: string;
     message: string;
 }
 
 export interface BadRequestResponse {
-    errors: BadRequestError[];
+    errors: BadRequestErrorMessage[];
 }
 
 export interface ErrorResponse {
@@ -30,7 +31,7 @@ declare module 'express-serve-static-core' {
         /**
          * @status 400
          */
-        badRequest(errors: BadRequestError[]): void;
+        badRequest(errors: BadRequestErrorMessage[]): void;
         /**
          * @status 401
          */
@@ -43,10 +44,10 @@ declare module 'express-serve-static-core' {
          * @status 404
          */
         notFound(error: string): void;
-        /**
-         * @status 500
-         */
-        internalServerError(error: string): void;
+    }
+
+    export interface Request {
+        requester: User;
     }
 }
 
@@ -76,8 +77,4 @@ response.forbidden = function (error) {
 
 response.notFound = function (error) {
     this.status(404).json({ error });
-};
-
-response.internalServerError = function (error) {
-    this.status(500).json({ error });
 };

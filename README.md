@@ -1,9 +1,8 @@
-<h1>Open Quiz API</h1>
+# Open Quiz API <!-- omit in toc -->
 
 [![codecov](https://img.shields.io/codecov/c/gh/Open-Quiz/api/main?label=codecov&logo=codecov&style=for-the-badge)](https://codecov.io/gh/Open-Quiz/api)
 
-## Table of Contents
-- [Table of Contents](#table-of-contents)
+## Table of Contents <!-- omit in toc -->
 - [About the Project](#about-the-project)
   - [Technologies](#technologies)
 - [Getting Started](#getting-started)
@@ -11,8 +10,8 @@
   - [Installation](#installation)
 - [Testing](#testing)
   - [Prerequisites](#prerequisites-1)
-  - [Unit Tests](#unit-tests)
   - [Integration Tests](#integration-tests)
+  - [Unit Tests](#unit-tests)
   - [Test Coverage](#test-coverage)
   
 ## About the Project
@@ -66,6 +65,10 @@ This projects consists of two types of tests:
 1. [Unit Tests](#unit-tests).
 2. [Integration Tests](#integration-tests).
 
+The tests are written using [Vitest](https://vitest.dev/). You'll notice that they are run with the `--threads false` flag. This is to prevent test suites from being run concurrently and attempting to access the `prisma` instant at the same time.
+
+The tests can be run using `yarn test`.
+
 ### Prerequisites
 
 1. [Docker Compose](https://docs.docker.com/compose/install/).
@@ -76,29 +79,19 @@ This projects consists of two types of tests:
     PORT=8001
 
     # This is not required for running the unit tests. It must match the
-    # environment variables in `docker-compose.yml`, The host and ip must
-    # also match the `wait-for-db` package.json script.
+    # environment variables in `docker-compose.yml`.
     DATABASE_URL="postgresql://prisma:prisma@localhost:5433/tests"
     ```
 
-The tests are written using [Vitest](https://vitest.dev/). You'll notice that they are run with the `--threads false` flag. This is to prevent test suites from being run concurrently and multiple instances of the API each trying to bind to the same port.
+### Integration Tests
+
+Integration tests are defined by the `@Integration` prefix in their suite descriptions. Integration tests work by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
 
 ### Unit Tests
 
-The unit tests are located throughout the `src` folder and test the api by mocking the return values from `prisma`. This is ideal for testing non-database specific logic such as validation, etc.
+Unit Tests are distinguished by the `@Unit` prefix in their suite descriptions. They should be used when testing parts of the API separate from other implementations.
 
-You can run these tests using `yarn test:unit`. To change the port the API uses refer to the example [.env.test](#prerequisites) file.
-
-### Integration Tests
-
-
-Integration tests are located in `tests/integration` and work by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests.
-
-You can run them using `yarn test:integration`.
-
-> **Note**  
-> The [`wait-for-it.sh`](https://github.com/vishnubob/wait-for-it) script is necessary to ensure that the tests don't start until PostgreSQL is ready to accept connections.
 
 ### Test Coverage
 
-You can run all the tests in order to determine the test coverage with `yarn test:coverage`. This runs both the integration tests and the unit tests together.
+You can run all the tests with coverage using `yarn test:coverage`.

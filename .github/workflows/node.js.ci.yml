@@ -2,6 +2,13 @@ name: CI
 
 on: [push]
 
+env:
+    PORT: 8001
+    DATABASE_URL: 'postgresql://prisma:prisma@localhost:5433/tests'
+    JWT_ACCESS_EXPIRES_IN: '1h'
+    JWT_REFRESH_EXPIRES_IN: '1h'
+    JWT_SECRET: 'test'
+
 jobs:
     build:
         name: Node
@@ -23,9 +30,6 @@ jobs:
 
             - name: Intall Dependencies
               run: yarn install
-
-            - name: 'Grant Execution Permissions To wait-for-it'
-              run: 'chmod +x ${PWD}/wait-for-it.sh'
 
             - name: Run Tests With Coverage
               run: yarn test:coverage

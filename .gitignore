@@ -16,3 +16,6 @@ prisma/zod
 
 src/zod
 coverage/
+
+# IDES
+.vscode
