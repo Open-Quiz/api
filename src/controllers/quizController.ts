@@ -1,40 +1,23 @@
 import { NextFunction, Request, Response } from 'express';
 import prisma from '../client/instance';
-import quizDto from '../models/dtos/quizDto';
+import quizDto, { QuizDto } from '../models/dtos/quizDto';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
-import { QuizQuestionService } from '../services/quizQuestionService';
-import { QuizService } from '../services/quizService';
+import quizService from '../services/quizService';
 import IdParam from '../types/interfaces/idParam';
-import { isNotUndefined } from '../utility/typing';
 import { PatchQuiz } from '../zod';
 
-export async function getAllQuizzes(req: Request, res: Response) {
-    const allQuizzes = await prisma.quiz.findMany({
-        include: { questions: true },
-        where: QuizService.whereUserCanAccess(req.requester.id),
-    });
-
-    const quizDtos = allQuizzes.map(quizDto);
-    return res.ok(quizDtos);
+export async function getAllQuizzes(req: Request, res: Response<QuizDto[]>) {
+    const allQuizzes = await quizService.getAllAccessibleQuizzes(req.requester.id);
+    res.ok(allQuizzes);
 }
 
-export async function getQuiz(req: Request<IdParam>, res: Response) {
-    const quiz = await prisma.quiz.findFirst({
-        where: {
-            id: req.params.id,
-        },
-        include: { questions: true },
-    });
-
-    if (!quiz) {
-        return res.notFound(`There is no quiz with the id ${req.params.id}`);
+export async function getQuiz(req: Request<IdParam>, res: Response<QuizDto>, next: NextFunction) {
+    try {
+        const quiz = await quizService.getAccessibleQuiz(req.params.id, req.requester.id);
+        res.ok(quiz);
+    } catch (err) {
+        next(err);
     }
-
-    if (!QuizService.canUserAccess(quiz, req.requester.id)) {
-        return res.forbidden(`You do not have access to the quiz ${quiz.id}`);
-    }
-
-    return res.ok(quizDto(quiz));
 }
 
 export async function createQuiz(
@@ -42,40 +25,9 @@ export async function createQuiz(
     res: Response,
     next: NextFunction,
 ) {
-    const { title, isPublic, questions = [], sharedWithUserIds = [] } = req.body;
-
-    const errors = questions
-        .map(QuizQuestionService.isInvalid)
-        .map((error, index) => (error ? { ...error, path: `questions.${index}.${error.path}` } : undefined))
-        .filter(isNotUndefined);
-
-    if (errors.length !== 0) {
-        return res.badRequest(errors);
-    }
-
     try {
-        const distinctSharedWithUserIds = await QuizService.validateSharedWithUserIds(
-            sharedWithUserIds,
-            req.requester.id,
-        );
-
-        const newQuiz = await prisma.quiz.create({
-            data: {
-                ownerId: req.requester.id,
-                title,
-                isPublic,
-                sharedWithUserIds: distinctSharedWithUserIds,
-                questions: {
-                    createMany: {
-                        data: questions,
-                    },
-                },
-            },
-            include: { questions: true },
-        });
-
-        const newQuizDto = quizDto(newQuiz);
-        return res.created(newQuizDto);
+        const newQuiz = await quizService.createQuiz(req.body, req.requester.id);
+        res.ok(newQuiz);
     } catch (err) {
         next(err);
     }
@@ -97,7 +49,7 @@ export async function updateQuiz(req: Request<IdParam, undefined, PatchQuiz>, re
 
     try {
         if (quizPatch.sharedWithUserIds) {
-            quizPatch.sharedWithUserIds = await QuizService.validateSharedWithUserIds(
+            quizPatch.sharedWithUserIds = await quizService.validateSharedWithUserIds(
                 quizPatch.sharedWithUserIds,
                 req.requester.id,
             );

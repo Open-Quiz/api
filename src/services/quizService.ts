@@ -1,35 +1,90 @@
 import { Prisma, Quiz } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
+import ForbiddenError from '../errors/forbiddenError';
+import NotFoundError from '../errors/notFoundError';
+import quizDto from '../models/dtos/quizDto';
+import { CompleteCreateQuiz } from '../models/zod/quizModel';
+import { isNotUndefined } from '../utility/typing';
+import { QuizQuestionService } from './quizQuestionService';
 
-export namespace QuizService {
-    export function whereUserCanAccess(userId: number): Prisma.QuizWhereInput {
-        return {
-            OR: [
-                {
-                    ownerId: userId,
-                },
-                {
-                    isPublic: true,
-                },
-                {
-                    sharedWithUserIds: {
-                        has: userId,
-                    },
-                },
-            ],
-        };
+class QuizService {
+    private readonly userRepository: Prisma.UserDelegate<undefined>;
+    private readonly quizRepository: Prisma.QuizDelegate<undefined>;
+
+    constructor(userRepository: Prisma.UserDelegate<undefined>, quizRepository: Prisma.QuizDelegate<undefined>) {
+        this.userRepository = userRepository;
+        this.quizRepository = quizRepository;
     }
 
-    export function canUserAccess(quiz: Quiz, userId: number) {
+    public async getAllAccessibleQuizzes(userId: number) {
+        const allQuizzes = await this.quizRepository.findMany({
+            include: { questions: true },
+            where: {
+                OR: [{ ownerId: userId }, { isPublic: true }, { sharedWithUserIds: { has: userId } }],
+            },
+        });
+
+        return allQuizzes.map(quizDto);
+    }
+
+    public async getAccessibleQuiz(quizId: number, requesterId: number) {
+        const quiz = await this.quizRepository.findFirst({
+            where: {
+                id: quizId,
+            },
+            include: { questions: true },
+        });
+
+        if (!quiz) {
+            throw new NotFoundError(`There is no quiz with the id ${quizId}`);
+        }
+
+        if (!this.canUserAccess(quiz, requesterId)) {
+            throw new ForbiddenError(`You do not have access to the quiz ${quizId}`);
+        }
+
+        return quizDto(quiz);
+    }
+
+    public async createQuiz({ questions = [], sharedWithUserIds = [], ...other }: CompleteCreateQuiz, ownerId: number) {
+        const errors = questions
+            .map(QuizQuestionService.isInvalid)
+            .map((error, index) => (error ? { ...error, path: `questions.${index}.${error.path}` } : undefined))
+            .filter(isNotUndefined);
+
+        if (errors.length !== 0) {
+            throw new BadRequestError(errors);
+        }
+
+        sharedWithUserIds = await this.validateSharedWithUserIds(sharedWithUserIds, ownerId);
+
+        const newQuiz = await prisma.quiz.create({
+            data: {
+                ...other,
+                ownerId,
+                sharedWithUserIds,
+                questions: {
+                    createMany: {
+                        data: questions,
+                    },
+                },
+            },
+            include: { questions: true },
+        });
+
+        return quizDto(newQuiz);
+    }
+
+    public canUserAccess(quiz: Quiz, userId: number) {
         return quiz.ownerId === userId || quiz.isPublic || quiz.sharedWithUserIds.includes(userId);
     }
 
-    export async function validateSharedWithUserIds(sharedWithUserIds: number[], requesterId: number) {
+    public async validateSharedWithUserIds(sharedWithUserIds: number[], requesterId: number) {
         const distinctSharedWithUserIds = [...new Set(sharedWithUserIds.filter((userId) => userId !== requesterId))];
 
         const sharedWithUserIdsThatExist = (
-            await prisma.user.findMany({
+            await this.userRepository.findMany({
                 where: {
                     id: {
                         in: distinctSharedWithUserIds,
@@ -51,3 +106,6 @@ export namespace QuizService {
         return distinctSharedWithUserIds;
     }
 }
+
+const singleton = new QuizService(prisma.user, prisma.quiz);
+export default singleton;
