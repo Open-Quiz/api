@@ -1,5 +1,5 @@
 import * as jose from 'jose';
-import { ObjectValues } from '../types/utilityTypes';
+import { ObjectValues } from '../types/utility';
 
 export namespace TokenService {
     const Secret = new TextEncoder().encode(process.env.JWT_SECRET);
