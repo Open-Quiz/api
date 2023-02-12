@@ -4,8 +4,8 @@ import prisma from '../client/instance';
 import { Attempt } from '../models/zod/attemptModel';
 import { IdArray } from '../models/zod/idModel';
 import { QuizQuestionService } from '../services/quizQuestionService';
-import IdParam from '../types/idParam';
-import { DEFAULT } from '../utils/postgres';
+import IdParam from '../types/interfaces/idParam';
+import { DEFAULT } from '../utility/postgres';
 import { CreateQuizQuestion, PatchQuizQuestion } from '../zod';
 
 export async function getAllQuizQuestions(req: Request, res: Response) {

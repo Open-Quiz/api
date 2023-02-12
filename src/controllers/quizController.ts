@@ -4,8 +4,8 @@ import quizDto from '../models/dtos/quizDto';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { QuizQuestionService } from '../services/quizQuestionService';
 import { QuizService } from '../services/quizService';
-import IdParam from '../types/idParam';
-import { isNotUndefined } from '../utils/typing';
+import IdParam from '../types/interfaces/idParam';
+import { isNotUndefined } from '../utility/typing';
 import { PatchQuiz } from '../zod';
 
 export async function getAllQuizzes(req: Request, res: Response) {

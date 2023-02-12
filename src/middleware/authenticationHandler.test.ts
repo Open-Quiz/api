@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ErrorResponse } from '../types/expressAugmentation';
+import { ErrorResponse } from '../types/augmentation/expressAugmentation';
 import { TokenService } from '../services/tokenService';
 import * as jose from 'jose';
 import request from '../testing/request';

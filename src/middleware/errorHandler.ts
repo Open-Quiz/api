@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError, ZodIssue } from 'zod';
 import BadRequestError from '../errors/badRequestError';
-import { BadRequestErrorMessage } from '../types/expressAugmentation';
+import { BadRequestErrorMessage } from '../types/augmentation/expressAugmentation';
 
 // For Express to register this middleware as an error handler it **must** have 4 parameters.
 export default function ErrorHandler(

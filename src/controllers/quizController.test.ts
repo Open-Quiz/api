@@ -2,7 +2,7 @@ import prisma from '../client/instance';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mockQuiz, mockQuizQuestion } from '../testing/mocks/mockQuiz';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
-import { BadRequestResponse, ErrorResponse } from '../types/expressAugmentation';
+import { BadRequestResponse, ErrorResponse } from '../types/augmentation/expressAugmentation';
 import { PatchQuiz } from '../zod';
 import { mockUser } from '../testing/mocks/mockUser';
 import { TokenService } from '../services/tokenService';

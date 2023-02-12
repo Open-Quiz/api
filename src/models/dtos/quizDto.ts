@@ -1,4 +1,4 @@
-import DTO from '../../utils/dto';
+import DTO from '../../utility/dto';
 import { CompleteQuiz } from '../zod/quizModel';
 
 export default function quizDto(quiz: CompleteQuiz) {

@@ -1,4 +1,4 @@
-import { BadRequestErrorMessage } from '../types/expressAugmentation';
+import { BadRequestErrorMessage } from '../types/augmentation/expressAugmentation';
 import { CreateQuizQuestion } from '../zod';
 
 export namespace QuizQuestionService {
