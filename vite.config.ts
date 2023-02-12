@@ -7,7 +7,5 @@ export default defineConfig({
         coverage: {
             reporter: ['json'],
         },
-        globalSetup: './src/testing/globalSetup.ts',
-        setupFiles: './src/testing/setup.ts',
     },
 });

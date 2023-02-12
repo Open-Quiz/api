@@ -3,6 +3,9 @@ import { ErrorResponse } from '../types/expressAugmentation';
 import { TokenService } from '../services/tokenService';
 import * as jose from 'jose';
 import request from '../testing/request';
+import setupTestApp from '../testing/setupTestApp';
+
+setupTestApp();
 
 describe('@Integration - Authentication Handler', () => {
     it('returns unauthorized request if there is no authorization header', async () => {

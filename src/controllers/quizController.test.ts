@@ -9,6 +9,9 @@ import { TokenService } from '../services/tokenService';
 import request from '../testing/request';
 import { User } from '@prisma/client';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
+import setupTestApp from '../testing/setupTestApp';
+
+setupTestApp();
 
 describe('@Integration - Quiz Controller', async () => {
     let user1: User;

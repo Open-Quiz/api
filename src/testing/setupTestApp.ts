@@ -1,8 +1,18 @@
-import { afterAll } from 'vitest';
+import { Server } from 'http';
+import { afterAll, beforeAll } from 'vitest';
+import createApp from '../app/createApp';
 import prisma from '../client/instance';
 
-afterAll(async (suite) => {
-    if (suite.tasks.some((task) => task.name.startsWith('@Integration'))) {
+export default function setupTestApp() {
+    let server: Server;
+
+    beforeAll(() => {
+        server = createApp().server;
+    });
+
+    afterAll(async () => {
+        server.close();
+
         const deleteQuestions = prisma.quizQuestion.deleteMany();
         const deleteQuizzes = prisma.quiz.deleteMany();
         const deleteUsers = prisma.user.deleteMany();
@@ -16,5 +26,5 @@ afterAll(async (suite) => {
         await prisma.$transaction([resetUsers, resetQuiz, resetQuestions]);
 
         await prisma.$disconnect();
-    }
-});
+    });
+}
