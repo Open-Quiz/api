@@ -44,10 +44,6 @@ declare module 'express-serve-static-core' {
          * @status 404
          */
         notFound(error: string): void;
-        /**
-         * @status 500
-         */
-        internalServerError(error: string): void;
     }
 
     export interface Request {
@@ -81,8 +77,4 @@ response.forbidden = function (error) {
 
 response.notFound = function (error) {
     this.status(404).json({ error });
-};
-
-response.internalServerError = function (error) {
-    this.status(500).json({ error });
 };

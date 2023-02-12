@@ -25,7 +25,7 @@ export default async function authenticationHandler(req: Request, res: Response,
         const userId = Number.parseInt(payload.sub);
         if (isNaN(userId)) {
             return res.unauthorized(
-                `Access token subject is not a valid user id. Expected number, received ${typeof payload.sub}`,
+                `Access token subject is not a valid user id. Expected number, received ${payload.sub}`,
             );
         }
 

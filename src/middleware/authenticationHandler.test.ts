@@ -53,6 +53,23 @@ describe('@Integration - Authentication Handler', () => {
         });
     });
 
+    it('returns unauthorized request if the token subject is not a valid id', async () => {
+        const token = await new jose.SignJWT({})
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setAudience(TokenService.TokenType.Access)
+            .setSubject('Invalid user id')
+            .setExpirationTime(process.env.JWT_REFRESH_EXPIRES_IN!)
+            .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+
+        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body).toStrictEqual<ErrorResponse>({
+            error: 'Access token subject is not a valid user id. Expected number, received Invalid user id',
+        });
+    });
+
     it('returns unauthorized request if there is no user associated with the token', async () => {
         const token = await TokenService.signAccessToken(1);
 

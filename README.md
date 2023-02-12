@@ -85,7 +85,7 @@ The tests can be run using `yarn test`.
 
 ### Integration Tests
 
-Integration tests are defined by the `@Integration` prefix in their suite descriptions. This allows us to perform the appropriate database cleanup after each suite has run. Integration tests work by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
+Integration tests are defined by the `@Integration` prefix in their suite descriptions. Integration tests work by running a test PostgreSQL database in a docker container which is stopped after the tests have run. This means we don't need to mock `prisma`, allowing us to simulate real requests and their responses.
 
 ### Unit Tests
 
