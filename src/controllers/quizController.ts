@@ -8,7 +8,7 @@ import { PatchQuiz } from '../zod';
 
 export async function getAllQuizzes(req: Request, res: Response<QuizDto[]>) {
     const allQuizzes = await quizService.getViewableQuizzes(req.requester.id);
-    res.ok(allQuizzes);
+    res.ok(allQuizzes.map(quizDto));
 }
 
 export async function getQuiz(req: Request<IdParam>, res: Response, next: NextFunction) {
@@ -27,7 +27,7 @@ export async function createQuiz(
 ) {
     try {
         const newQuiz = await quizService.createQuiz(req.body, req.requester.id);
-        res.ok(quizDto(newQuiz));
+        res.created(quizDto(newQuiz));
     } catch (err) {
         next(err);
     }
