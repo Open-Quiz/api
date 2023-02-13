@@ -6,6 +6,7 @@ import NotFoundError from '../errors/notFoundError';
 import quizDto from '../models/dtos/quizDto';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { isNotUndefined } from '../utility/typing';
+import { PatchQuiz } from '../zod';
 import { QuizQuestionService } from './quizQuestionService';
 
 class QuizService {
@@ -17,7 +18,7 @@ class QuizService {
         this.quizRepository = quizRepository;
     }
 
-    public async getAllAccessibleQuizzes(userId: number) {
+    public async getViewableQuizzes(userId: number) {
         const allQuizzes = await this.quizRepository.findMany({
             include: { questions: true },
             where: {
@@ -25,10 +26,10 @@ class QuizService {
             },
         });
 
-        return allQuizzes.map(quizDto);
+        return allQuizzes;
     }
 
-    public async getAccessibleQuiz(quizId: number, requesterId: number) {
+    public async getQuiz(quizId: number) {
         const quiz = await this.quizRepository.findFirst({
             where: {
                 id: quizId,
@@ -40,11 +41,17 @@ class QuizService {
             throw new NotFoundError(`There is no quiz with the id ${quizId}`);
         }
 
+        return quiz;
+    }
+
+    public async getViewableQuiz(quizId: number, requesterId: number) {
+        const quiz = await this.getQuiz(quizId);
+
         if (!this.canUserAccess(quiz, requesterId)) {
             throw new ForbiddenError(`You do not have access to the quiz ${quizId}`);
         }
 
-        return quizDto(quiz);
+        return quiz;
     }
 
     public async createQuiz({ questions = [], sharedWithUserIds = [], ...other }: CompleteCreateQuiz, ownerId: number) {
@@ -59,7 +66,7 @@ class QuizService {
 
         sharedWithUserIds = await this.validateSharedWithUserIds(sharedWithUserIds, ownerId);
 
-        const newQuiz = await prisma.quiz.create({
+        const newQuiz = await this.quizRepository.create({
             data: {
                 ...other,
                 ownerId,
@@ -73,7 +80,28 @@ class QuizService {
             include: { questions: true },
         });
 
-        return quizDto(newQuiz);
+        return newQuiz;
+    }
+
+    public async updateQuiz(quizId: number, requesterId: number, patchQuiz: PatchQuiz) {
+        if (patchQuiz.sharedWithUserIds) {
+            patchQuiz.sharedWithUserIds = await this.validateSharedWithUserIds(
+                patchQuiz.sharedWithUserIds,
+                requesterId,
+            );
+        }
+
+        return await this.quizRepository.update({
+            where: { id: quizId },
+            data: patchQuiz,
+            include: { questions: true },
+        });
+    }
+
+    public async deleteQuiz(quizId: number) {
+        await this.quizRepository.delete({
+            where: { id: quizId },
+        });
     }
 
     public canUserAccess(quiz: Quiz, userId: number) {
