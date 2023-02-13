@@ -1,4 +1,5 @@
 import express from 'express';
+import config from '../config';
 import authenticationHandler from '../middleware/authenticationHandler';
 import ErrorHandler from '../middleware/errorHandler';
 import { quizQuestionRoutes, quizRoutes } from '../routes';
@@ -7,7 +8,6 @@ import { quizQuestionRoutes, quizRoutes } from '../routes';
 import '../types/augmentation/expressAugmentation';
 
 export default function createApp() {
-    const port = Number(process.env.PORT) || 8000;
     const app = express();
 
     app.use(express.json());
@@ -19,8 +19,8 @@ export default function createApp() {
 
     app.use(ErrorHandler);
 
-    const server = app.listen(port, () => {
-        console.log(`⚡[server]: Server is running on port ${port}`);
+    const server = app.listen(config.api.port, () => {
+        console.log(`⚡[server]: Server is running on port ${config.api.port}`);
     });
 
     return { app, server };

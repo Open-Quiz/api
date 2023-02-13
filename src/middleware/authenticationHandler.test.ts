@@ -4,6 +4,7 @@ import { TokenService } from '../services/tokenService';
 import * as jose from 'jose';
 import request from '../testing/request';
 import setupTestApp from '../testing/setupTestApp';
+import config from '../config';
 
 setupTestApp();
 
@@ -42,8 +43,8 @@ describe('@Integration - Authentication Handler', () => {
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
             .setAudience(TokenService.TokenType.Access)
-            .setExpirationTime(process.env.JWT_REFRESH_EXPIRES_IN!)
-            .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+            .setExpirationTime(config.jwt.expiresIn.access)
+            .sign(config.jwt.secret);
 
         const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
@@ -59,8 +60,8 @@ describe('@Integration - Authentication Handler', () => {
             .setIssuedAt()
             .setAudience(TokenService.TokenType.Access)
             .setSubject('Invalid user id')
-            .setExpirationTime(process.env.JWT_REFRESH_EXPIRES_IN!)
-            .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+            .setExpirationTime(config.jwt.expiresIn.access)
+            .sign(config.jwt.secret);
 
         const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
