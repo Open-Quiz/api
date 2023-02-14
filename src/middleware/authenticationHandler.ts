@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { TokenService } from '../services/tokenService';
+import tokenService, { TokenType } from '../services/tokenService';
 import * as jose from 'jose';
 import prisma from '../client/instance';
 
@@ -16,7 +16,7 @@ export default async function authenticationHandler(req: Request, res: Response,
     const token = req.headers.authorization.substring('Bearer '.length);
 
     try {
-        const payload = await TokenService.verifyToken(token, TokenService.TokenType.Access);
+        const payload = await tokenService.verifyToken(token, TokenType.Access);
 
         if (!payload.sub) {
             return res.unauthorized('Access token is missing subject in payload');

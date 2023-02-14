@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ErrorResponse } from '../types/augmentation/expressAugmentation';
-import { TokenService } from '../services/tokenService';
+import tokenService, { TokenType } from '../services/tokenService';
 import * as jose from 'jose';
 import request from '../testing/request';
 import setupTestApp from '../testing/setupTestApp';
@@ -28,7 +28,7 @@ describe('@Integration - Authentication Handler', () => {
     });
 
     it('returns unauthorized request if the token is not an access token', async () => {
-        const token = await TokenService.signRefreshToken(1);
+        const token = await tokenService.signRefreshToken(1);
 
         const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 
@@ -42,7 +42,7 @@ describe('@Integration - Authentication Handler', () => {
         const token = await new jose.SignJWT({})
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
-            .setAudience(TokenService.TokenType.Access)
+            .setAudience(TokenType.Access)
             .setExpirationTime(config.jwt.expiresIn.access)
             .sign(config.jwt.secret);
 
@@ -58,7 +58,7 @@ describe('@Integration - Authentication Handler', () => {
         const token = await new jose.SignJWT({})
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
-            .setAudience(TokenService.TokenType.Access)
+            .setAudience(TokenType.Access)
             .setSubject('Invalid user id')
             .setExpirationTime(config.jwt.expiresIn.access)
             .sign(config.jwt.secret);
@@ -72,7 +72,7 @@ describe('@Integration - Authentication Handler', () => {
     });
 
     it('returns unauthorized request if there is no user associated with the token', async () => {
-        const token = await TokenService.signAccessToken(1);
+        const token = await tokenService.signAccessToken(1);
 
         const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
 

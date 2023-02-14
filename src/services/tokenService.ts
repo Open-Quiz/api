@@ -2,28 +2,28 @@ import * as jose from 'jose';
 import config from '../config';
 import { ObjectValues } from '../types/utility';
 
-export namespace TokenService {
-    export const TokenType = {
-        Access: 'access',
-        Refresh: 'refresh',
-    } as const;
+export const TokenType = {
+    Access: 'access',
+    Refresh: 'refresh',
+} as const;
 
-    export type TokenType = ObjectValues<typeof TokenType>;
+export type TokenType = ObjectValues<typeof TokenType>;
 
-    export async function verifyToken(token: string, tokenType: TokenType) {
+export class TokenService {
+    public async verifyToken(token: string, tokenType: TokenType) {
         const { payload } = await jose.jwtVerify(token, config.jwt.secret, { audience: tokenType });
         return payload;
     }
 
-    export async function signAccessToken(userId: number) {
-        return signToken(userId, TokenType.Access);
+    public async signAccessToken(userId: number) {
+        return this.signToken(userId, TokenType.Access);
     }
 
-    export async function signRefreshToken(userId: number) {
-        return signToken(userId, TokenType.Refresh);
+    public async signRefreshToken(userId: number) {
+        return this.signToken(userId, TokenType.Refresh);
     }
 
-    async function signToken(userId: number, tokenType: TokenType) {
+    private async signToken(userId: number, tokenType: TokenType) {
         return await new jose.SignJWT({})
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
@@ -33,3 +33,6 @@ export namespace TokenService {
             .sign(config.jwt.secret);
     }
 }
+
+const singleton = new TokenService();
+export default singleton;

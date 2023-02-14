@@ -5,7 +5,7 @@ import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { BadRequestResponse, ErrorResponse } from '../types/augmentation/expressAugmentation';
 import { PatchQuiz } from '../zod';
 import { mockUser } from '../testing/mocks/mockUser';
-import { TokenService } from '../services/tokenService';
+import tokenService from '../services/tokenService';
 import request from '../testing/request';
 import { User } from '@prisma/client';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
@@ -37,9 +37,9 @@ describe('@Integration - Quiz Controller', async () => {
             data: mockUser,
         });
 
-        user1AccessToken = `Bearer ${await TokenService.signAccessToken(user1.id)}`;
-        user2AccessToken = `Bearer ${await TokenService.signAccessToken(user2.id)}`;
-        user3AccessToken = `Bearer ${await TokenService.signAccessToken(user3.id)}`;
+        user1AccessToken = `Bearer ${await tokenService.signAccessToken(user1.id)}`;
+        user2AccessToken = `Bearer ${await tokenService.signAccessToken(user2.id)}`;
+        user3AccessToken = `Bearer ${await tokenService.signAccessToken(user3.id)}`;
 
         quiz1 = quizDto(
             await prisma.quiz.create({
