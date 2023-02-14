@@ -7,3 +7,7 @@ export function isArray<T>(value: T | any): value is T[] {
 }
 
 export type ArrayType<Type> = Type extends (infer Element)[] ? Element : never;
+
+export function hasMeta<T>(obj: any | T, metaKey: keyof T): obj is T {
+    return Object.prototype.hasOwnProperty.call(obj, metaKey);
+}

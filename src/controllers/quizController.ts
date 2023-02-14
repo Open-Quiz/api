@@ -1,4 +1,6 @@
 import { Express, NextFunction, Request, Response, Router } from 'express';
+import Controller from '../decorators/controller';
+import { Delete, Get, Patch, Post } from '../decorators/route';
 import validate from '../middleware/validationHandler';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
 import { IdModel } from '../models/zod/idModel';
@@ -6,9 +8,9 @@ import { CompleteCreateQuiz, CompleteCreateQuizModel } from '../models/zod/quizM
 import { QuizService } from '../services/quizService';
 import IdParam from '../types/interfaces/idParam';
 import { PatchQuiz, PatchQuizModel } from '../zod';
-import Controller from './controller';
 
-export default class QuizController implements Controller {
+@Controller('/api/quizzes')
+export default class QuizController {
     private readonly quizService: QuizService;
 
     constructor(quizService: QuizService) {
@@ -29,23 +31,16 @@ export default class QuizController implements Controller {
             .patch(validate({ param: IdModel, body: PatchQuizModel }), this.updateQuizById)
             .delete(validate({ param: IdModel }), this.deleteQuizById);
 
-        app.use('/api/quiz', routes);
+        app.use('/api/quizzes', routes);
     }
 
+    @Get()
     public async getAllQuizzes(req: Request, res: Response<QuizDto[]>) {
         const allQuizzes = await this.quizService.getAllViewableQuizzes(req.requester.id);
         res.ok(allQuizzes.map(quizDto));
     }
 
-    public async getQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
-        try {
-            const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
-            res.ok(quizDto(quiz));
-        } catch (err) {
-            next(err);
-        }
-    }
-
+    @Post()
     public async createQuiz(req: Request<unknown, unknown, CompleteCreateQuiz>, res: Response, next: NextFunction) {
         try {
             const newQuiz = await this.quizService.createQuiz(req.body, req.requester.id);
@@ -55,6 +50,17 @@ export default class QuizController implements Controller {
         }
     }
 
+    @Get('/:id')
+    public async getQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
+        try {
+            const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
+            res.ok(quizDto(quiz));
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @Patch('/:id')
     public async updateQuizById(req: Request<IdParam, undefined, PatchQuiz>, res: Response, next: NextFunction) {
         try {
             const quiz = await this.quizService.getQuizById(req.params.id);
@@ -71,6 +77,7 @@ export default class QuizController implements Controller {
         }
     }
 
+    @Delete('/:id')
     public async deleteQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
         try {
             const quiz = await this.quizService.getQuizById(req.params.id);
