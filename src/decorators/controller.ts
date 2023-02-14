@@ -2,7 +2,7 @@ import { Constructor } from '../types/utility';
 import BindThis from './bindThis';
 
 export type ControllerMeta = {
-    route?: string;
+    route: string;
 };
 
 export type ControllerMetaObj = {

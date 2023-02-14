@@ -25,7 +25,7 @@ export default function BindThis<T extends Constructor>(constructor: T): T {
             const boundFunction = (...args: any[]) => original.apply(self, args);
 
             if (hasMeta<RouteMetaObj>(original, 'routeMeta')) {
-                Object.assign(boundFunction, original.routeMeta);
+                Object.assign(boundFunction, { routeMeta: original.routeMeta });
             }
 
             Locker.prototype[key] = boundFunction;

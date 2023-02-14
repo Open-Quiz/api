@@ -4,6 +4,7 @@ import QuizController from '../controllers/quizController';
 import authenticationHandler from '../middleware/authenticationHandler';
 import ErrorHandler from '../middleware/errorHandler';
 import { quizQuestionRoutes } from '../routes';
+import { useRoutes } from '../routes/meta/addRoutes';
 import quizService from '../services/quizService';
 
 // Apply module augmentation
@@ -16,10 +17,8 @@ export default function createApp() {
     app.use(express.urlencoded({ extended: false }));
     app.use(authenticationHandler);
 
-    const controllers = [new QuizController(quizService)];
-
     app.use('/api/quizzes/questions', quizQuestionRoutes);
-    controllers.forEach((controller) => controller.applyRoutes(app));
+    useRoutes(app, new QuizController(quizService));
 
     app.use(ErrorHandler);
 
