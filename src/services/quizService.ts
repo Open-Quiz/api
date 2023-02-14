@@ -8,7 +8,7 @@ import { isNotUndefined } from '../utility/typing';
 import { PatchQuiz } from '../zod';
 import { QuizQuestionService } from './quizQuestionService';
 
-class QuizService {
+export class QuizService {
     private readonly userRepository: Prisma.UserDelegate<undefined>;
     private readonly quizRepository: Prisma.QuizDelegate<undefined>;
 
