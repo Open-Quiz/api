@@ -3,7 +3,6 @@ import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
-import quizDto from '../models/dtos/quizDto';
 import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { isNotUndefined } from '../utility/typing';
 import { PatchQuiz } from '../zod';
@@ -18,7 +17,7 @@ class QuizService {
         this.quizRepository = quizRepository;
     }
 
-    public async getViewableQuizzes(userId: number) {
+    public async getAllViewableQuizzes(userId: number) {
         const allQuizzes = await this.quizRepository.findMany({
             include: { questions: true },
             where: {
@@ -29,7 +28,7 @@ class QuizService {
         return allQuizzes;
     }
 
-    public async getQuiz(quizId: number) {
+    public async getQuizById(quizId: number) {
         const quiz = await this.quizRepository.findFirst({
             where: {
                 id: quizId,
@@ -44,8 +43,8 @@ class QuizService {
         return quiz;
     }
 
-    public async getViewableQuiz(quizId: number, requesterId: number) {
-        const quiz = await this.getQuiz(quizId);
+    public async getViewableQuizById(quizId: number, requesterId: number) {
+        const quiz = await this.getQuizById(quizId);
 
         if (!this.canUserAccess(quiz, requesterId)) {
             throw new ForbiddenError(`You do not have access to the quiz ${quizId}`);
@@ -83,7 +82,7 @@ class QuizService {
         return newQuiz;
     }
 
-    public async updateQuiz(quizId: number, requesterId: number, patchQuiz: PatchQuiz) {
+    public async updateQuizById(quizId: number, requesterId: number, patchQuiz: PatchQuiz) {
         if (patchQuiz.sharedWithUserIds) {
             patchQuiz.sharedWithUserIds = await this.validateSharedWithUserIds(
                 patchQuiz.sharedWithUserIds,
@@ -98,7 +97,7 @@ class QuizService {
         });
     }
 
-    public async deleteQuiz(quizId: number) {
+    public async deleteQuizById(quizId: number) {
         await this.quizRepository.delete({
             where: { id: quizId },
         });

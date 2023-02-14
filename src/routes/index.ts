@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createQuiz, deleteQuiz, getAllQuizzes, getQuiz, updateQuiz } from '../controllers/quizController';
+import { createQuiz, deleteQuizById, getAllQuizzes, getQuizById, updateQuizById } from '../controllers/quizController';
 import {
     createQuizQuestion,
     createQuizQuestions,
@@ -28,9 +28,9 @@ quizRoutes
 
 quizRoutes
     .route('/:id')
-    .get(validate({ param: IdModel }), getQuiz)
-    .patch(validate({ param: IdModel, body: PatchQuizModel }), updateQuiz)
-    .delete(validate({ param: IdModel }), deleteQuiz);
+    .get(validate({ param: IdModel }), getQuizById)
+    .patch(validate({ param: IdModel, body: PatchQuizModel }), updateQuizById)
+    .delete(validate({ param: IdModel }), deleteQuizById);
 
 quizQuestionRoutes
     .route('/')
