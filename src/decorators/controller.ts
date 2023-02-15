@@ -11,10 +11,6 @@ export type ControllerMetaObj = {
 
 export default function Controller(route?: string) {
     return function (constructor: Constructor) {
-        const result = BindThis(constructor);
-        Object.assign(result, { controllerMeta: { route } });
-
-        console.log(result);
-        return result;
+        Object.assign(constructor, { controllerMeta: { route } });
     };
 }

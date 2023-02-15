@@ -30,10 +30,10 @@ function generateRouter(routes: Routes) {
     return router;
 }
 
-function generateRoutes(obj: Object): Routes {
+function generateRoutes(controller: Object): Routes {
     const routes: Routes = {};
 
-    const proto = obj.constructor.prototype;
+    const proto = controller.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach((key) => {
         const descriptor = Object.getOwnPropertyDescriptor(proto, key);
         if (
@@ -46,9 +46,10 @@ function generateRoutes(obj: Object): Routes {
                 routes[meta.route] = [];
             }
 
+            const handler = descriptor.value as unknown as RequestHandler;
             routes[meta.route].push({
                 method: meta.method,
-                handler: descriptor.value as unknown as RequestHandler,
+                handler: handler.bind(controller),
             });
         }
     });
@@ -56,14 +57,14 @@ function generateRoutes(obj: Object): Routes {
     return routes;
 }
 
-export function useRoutes(app: Express, obj: Object) {
-    if (!hasMeta<ControllerMetaObj>(obj.constructor, 'controllerMeta')) {
+export function useRoutes(app: Express, controller: Object) {
+    if (!hasMeta<ControllerMetaObj>(controller.constructor, 'controllerMeta')) {
         return;
     }
 
-    const baseRoute = obj.constructor.controllerMeta.route;
+    const baseRoute = controller.constructor.controllerMeta.route;
 
-    const routes = generateRoutes(obj);
+    const routes = generateRoutes(controller);
     const router = generateRouter(routes);
 
     app.use(baseRoute, router);
