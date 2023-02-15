@@ -29,5 +29,6 @@ export function Route(method: Method, route = '/') {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const meta = { method, route };
         descriptor.value.routeMeta = meta;
+        console.log('route' + method + route);
     };
 }

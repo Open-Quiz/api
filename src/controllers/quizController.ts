@@ -1,6 +1,7 @@
 import { Express, NextFunction, Request, Response, Router } from 'express';
 import Controller from '../decorators/controller';
 import { Delete, Get, Patch, Post } from '../decorators/route';
+import Validate from '../decorators/validate';
 import validate from '../middleware/validationHandler';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
 import { IdModel } from '../models/zod/idModel';
@@ -51,6 +52,7 @@ export default class QuizController {
     }
 
     @Get('/:id')
+    @Validate({ param: IdModel })
     public async getQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
         try {
             const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
