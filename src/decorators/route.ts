@@ -1,13 +1,14 @@
 import { Method } from '../types/enums/MethodTypes';
+import { attachMetadata, hasMeta, Metadata } from '../utility/metadata';
 
 export type RouteMeta = {
     method: Method;
     route: string;
 };
 
-export type RouteMetaObj = {
-    routeMeta: RouteMeta;
-};
+export function hasRouteMeta(obj: any): obj is Metadata<{ route: RouteMeta }> {
+    return hasMeta(obj, 'route');
+}
 
 export function Get(route = '/') {
     return Route(Method.GET, route);
@@ -28,7 +29,6 @@ export function Delete(route = '/') {
 export function Route(method: Method, route = '/') {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const meta = { method, route };
-        descriptor.value.routeMeta = meta;
-        console.log('route' + method + route);
+        attachMetadata(descriptor.value, { route: meta });
     };
 }

@@ -37,6 +37,7 @@ export default class QuizController {
 
     @Get()
     public async getAllQuizzes(req: Request, res: Response<QuizDto[]>) {
+        console.log('GET: ', this);
         const allQuizzes = await this.quizService.getAllViewableQuizzes(req.requester.id);
         res.ok(allQuizzes.map(quizDto));
     }
@@ -55,8 +56,11 @@ export default class QuizController {
     @Validate({ param: IdModel })
     public async getQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
         try {
-            const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
-            res.ok(quizDto(quiz));
+            console.log('GET: id ', this);
+            const quiz = {};
+            // const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
+            // res.ok(quizDto(quiz));
+            res.ok(quiz);
         } catch (err) {
             next(err);
         }

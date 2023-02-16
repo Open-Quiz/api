@@ -1,9 +1,8 @@
 import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
-import { ControllerMetaObj } from '../../decorators/controller';
-import { RouteMeta, RouteMetaObj } from '../../decorators/route';
+import { hasControllerMeta } from '../../decorators/controller';
+import { hasRouteMeta } from '../../decorators/route';
 import { Method } from '../../types/enums/MethodTypes';
-import { hasMeta } from '../../utility/typing';
 
 type Routes = Record<string, { method: Method; handler: RequestHandler }[]>;
 
@@ -30,26 +29,23 @@ function generateRouter(routes: Routes) {
     return router;
 }
 
-function generateRoutes(controller: Object): Routes {
+function generateRoutes(controller: object): Routes {
     const routes: Routes = {};
 
     const proto = controller.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach((key) => {
         const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-        if (
-            descriptor &&
-            typeof descriptor.value === 'function' &&
-            hasMeta<RouteMetaObj>(descriptor.value, 'routeMeta')
-        ) {
-            const meta = descriptor.value.routeMeta;
+        if (descriptor && typeof descriptor.value === 'function' && hasRouteMeta(descriptor.value)) {
+            const meta = descriptor.value.metadata.route;
             if (!(meta.route in routes)) {
                 routes[meta.route] = [];
             }
 
             const handler = descriptor.value as unknown as RequestHandler;
+
             routes[meta.route].push({
                 method: meta.method,
-                handler: handler.bind(controller),
+                handler: (req, res, next) => handler(req, res, next),
             });
         }
     });
@@ -58,11 +54,11 @@ function generateRoutes(controller: Object): Routes {
 }
 
 export function useRoutes(app: Express, controller: Object) {
-    if (!hasMeta<ControllerMetaObj>(controller.constructor, 'controllerMeta')) {
+    if (!hasControllerMeta(controller.constructor)) {
         return;
     }
 
-    const baseRoute = controller.constructor.controllerMeta.route;
+    const baseRoute = controller.constructor.metadata.controller.route;
 
     const routes = generateRoutes(controller);
     const router = generateRouter(routes);

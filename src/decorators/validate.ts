@@ -1,6 +1,5 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ZodSchema } from 'zod';
-import IdParam from '../types/interfaces/idParam';
 
 export type ValidationOptions<ParamType, BodyType> = {
     param?: ZodSchema<ParamType>;
@@ -11,13 +10,12 @@ export default function Validate<ParamType = any, BodyType = any>(options: Valid
     type Handler = (req: Request<ParamType, unknown, BodyType>, res: Response, next: NextFunction) => Promise<void>;
 
     return function (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<Handler>) {
-        console.log('Validate');
         const original = descriptor.value;
         if (!original) {
             return;
         }
 
-        const handler: Handler = async (req, res, next) => {
+        const validationHandler: Handler = async (req, res, next) => {
             try {
                 if (options.param) {
                     req.params = await options.param.parseAsync(req.params);
@@ -32,6 +30,6 @@ export default function Validate<ParamType = any, BodyType = any>(options: Valid
             }
         };
 
-        descriptor.value = handler;
+        return { value: validationHandler };
     };
 }
