@@ -15,7 +15,7 @@ export default function Validate<ParamType = any, BodyType = any>(options: Valid
             return;
         }
 
-        const validationHandler: Handler = async (req, res, next) => {
+        const validationHandler: Handler = async function (this: ThisType<Handler>, req, res, next) {
             try {
                 if (options.param) {
                     req.params = await options.param.parseAsync(req.params);
@@ -24,7 +24,7 @@ export default function Validate<ParamType = any, BodyType = any>(options: Valid
                     req.body = await options.body.parseAsync(req.body);
                 }
 
-                original(req, res, next);
+                original.call(this, req, res, next);
             } catch (err) {
                 next(err);
             }

@@ -16,12 +16,16 @@ function generateRouter(routes: Routes) {
             switch (handlerMeta.method) {
                 case 'GET':
                     routeBuilder.get(handlerMeta.handler);
+                    break;
                 case 'POST':
                     routeBuilder.post(handlerMeta.handler);
+                    break;
                 case 'PATCH':
                     routeBuilder.patch(handlerMeta.handler);
+                    break;
                 case 'DELETE':
                     routeBuilder.delete(handlerMeta.handler);
+                    break;
             }
         }
     }

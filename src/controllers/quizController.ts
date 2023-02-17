@@ -36,13 +36,13 @@ export default class QuizController {
     }
 
     @Get()
-    public async getAllQuizzes(req: Request, res: Response<QuizDto[]>) {
-        console.log('GET: ', this);
+    public async getAllQuizzes(req: Request, res: Response) {
         const allQuizzes = await this.quizService.getAllViewableQuizzes(req.requester.id);
         res.ok(allQuizzes.map(quizDto));
     }
 
     @Post()
+    @Validate({ body: CompleteCreateQuizModel })
     public async createQuiz(req: Request<unknown, unknown, CompleteCreateQuiz>, res: Response, next: NextFunction) {
         try {
             const newQuiz = await this.quizService.createQuiz(req.body, req.requester.id);
@@ -56,19 +56,18 @@ export default class QuizController {
     @Validate({ param: IdModel })
     public async getQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
         try {
-            console.log('GET: id ', this);
-            const quiz = {};
-            // const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
-            // res.ok(quizDto(quiz));
-            res.ok(quiz);
+            const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
+            res.ok(quizDto(quiz));
         } catch (err) {
             next(err);
         }
     }
 
     @Patch('/:id')
+    @Validate({ param: IdModel, body: PatchQuizModel })
     public async updateQuizById(req: Request<IdParam, undefined, PatchQuiz>, res: Response, next: NextFunction) {
         try {
+            console.log('PATCH: id', this);
             const quiz = await this.quizService.getQuizById(req.params.id);
 
             if (quiz.ownerId !== req.requester.id) {
@@ -84,6 +83,7 @@ export default class QuizController {
     }
 
     @Delete('/:id')
+    @Validate({ param: IdModel })
     public async deleteQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
         try {
             const quiz = await this.quizService.getQuizById(req.params.id);
