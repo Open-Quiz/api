@@ -1,10 +1,11 @@
 import express from 'express';
 import config from '../config';
 import QuizController from '../controllers/quizController';
+import QuizQuestionController from '../controllers/quizQuestionController';
 import authenticationHandler from '../middleware/authenticationHandler';
 import errorHandler from '../middleware/errorHandler';
-import { quizQuestionRoutes } from '../routes';
 import { useRoutes } from '../routes/meta/useRoutes';
+import questionService from '../services/questionService';
 import quizService from '../services/quizService';
 
 // Apply module augmentation
@@ -17,7 +18,7 @@ export default function createApp() {
     app.use(express.urlencoded({ extended: false }));
     app.use(authenticationHandler);
 
-    app.use('/api/quizzes/questions', quizQuestionRoutes);
+    useRoutes(app, new QuizQuestionController(questionService));
     useRoutes(app, new QuizController(quizService));
 
     app.use(errorHandler);

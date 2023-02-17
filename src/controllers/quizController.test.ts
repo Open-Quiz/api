@@ -1,15 +1,14 @@
 import prisma from '../client/instance';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mockQuiz, mockQuizQuestion } from '../testing/mocks/mockQuiz';
-import { CompleteCreateQuiz } from '../models/zod/quizModel';
 import { BadRequestResponse, ErrorResponse } from '../types/augmentation/expressAugmentation';
-import { PatchQuiz } from '../zod';
 import { mockUser } from '../testing/mocks/mockUser';
 import tokenService from '../services/tokenService';
 import request from '../testing/request';
 import { User } from '@prisma/client';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
 import setupTestApp from '../testing/setupTestApp';
+import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
 
 setupTestApp();
 
@@ -140,7 +139,7 @@ describe('@Integration - Quiz Controller', async () => {
 
     describe('PATCH /api/quizzes/:id', async () => {
         it('updates the quiz title and returns the updated quiz', async () => {
-            const patchQuiz: PatchQuiz = {
+            const patchQuiz: UpdateQuiz = {
                 title: 'Updated Quiz Title',
             };
 
@@ -153,7 +152,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const patchQuiz: PatchQuiz = {
+            const patchQuiz: UpdateQuiz = {
                 title: 'Updated Quiz Title',
             };
 
@@ -166,7 +165,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a forbidden response if you are not the owner of the quiz', async () => {
-            const patchQuiz: PatchQuiz = {
+            const patchQuiz: UpdateQuiz = {
                 title: 'Updated Quiz Title',
             };
 
@@ -179,7 +178,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a bad request response if the shared with user ids dont exist', async () => {
-            const patchQuiz: PatchQuiz = {
+            const patchQuiz: UpdateQuiz = {
                 sharedWithUserIds: [4, 5],
             };
 
@@ -194,11 +193,11 @@ describe('@Integration - Quiz Controller', async () => {
 
     describe('POST /api/quizzes', async () => {
         it('should create 1 quiz and 3 quiz questions', async () => {
-            const postQuiz: CompleteCreateQuiz = {
+            const createQuiz: CreateQuiz = {
                 ...mockQuiz,
                 questions: [mockQuizQuestion, mockQuizQuestion, mockQuizQuestion],
             };
-            const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
+            const res = await request.post('/api/quizzes').send(createQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<QuizDto>({
@@ -224,12 +223,13 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('removes duplicates and the owner id from the shared with user ids', async () => {
-            const postQuiz: CompleteCreateQuiz = {
+            const createQuiz: CreateQuiz = {
                 ...mockQuiz,
                 sharedWithUserIds: [1, 2, 2, 3],
+                questions: [],
             };
 
-            const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
+            const res = await request.post('/api/quizzes').send(createQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<QuizDto>({
@@ -242,12 +242,13 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a bad request response if the shared with user ids dont exist', async () => {
-            const postQuiz: CompleteCreateQuiz = {
+            const createQuiz: CreateQuiz = {
                 ...mockQuiz,
                 sharedWithUserIds: [4],
+                questions: [],
             };
 
-            const res = await request.post('/api/quizzes').send(postQuiz).set('authorization', user1AccessToken);
+            const res = await request.post('/api/quizzes').send(createQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({

@@ -1,20 +1,26 @@
-import { Prisma, Quiz } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
-import { CompleteCreateQuiz } from '../models/zod/quizModel';
-import { isNotUndefined } from '../utility/typing';
-import { PatchQuiz } from '../zod';
-import { QuizQuestionService } from './quizQuestionService';
+import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
+import { CreateQuestion } from '../models/zod/quizQuestionModel';
+import questionService, { QuestionService } from './questionService';
+import { canUserAccess } from './userService';
 
 export class QuizService {
     private readonly userRepository: Prisma.UserDelegate<undefined>;
     private readonly quizRepository: Prisma.QuizDelegate<undefined>;
+    private readonly questionService: QuestionService;
 
-    constructor(userRepository: Prisma.UserDelegate<undefined>, quizRepository: Prisma.QuizDelegate<undefined>) {
+    constructor(
+        userRepository: Prisma.UserDelegate<undefined>,
+        quizRepository: Prisma.QuizDelegate<undefined>,
+        questionService: QuestionService,
+    ) {
         this.userRepository = userRepository;
         this.quizRepository = quizRepository;
+        this.questionService = questionService;
     }
 
     public async getAllViewableQuizzes(userId: number) {
@@ -46,22 +52,15 @@ export class QuizService {
     public async getViewableQuizById(quizId: number, requesterId: number) {
         const quiz = await this.getQuizById(quizId);
 
-        if (!this.canUserAccess(quiz, requesterId)) {
+        if (!canUserAccess(quiz, requesterId)) {
             throw new ForbiddenError(`You do not have access to the quiz ${quizId}`);
         }
 
         return quiz;
     }
 
-    public async createQuiz({ questions = [], sharedWithUserIds = [], ...other }: CompleteCreateQuiz, ownerId: number) {
-        const errors = questions
-            .map(QuizQuestionService.isInvalid)
-            .map((error, index) => (error ? { ...error, path: `questions.${index}.${error.path}` } : undefined))
-            .filter(isNotUndefined);
-
-        if (errors.length !== 0) {
-            throw new BadRequestError(errors);
-        }
+    public async createQuiz({ questions = [], sharedWithUserIds = [], ...other }: CreateQuiz, ownerId: number) {
+        this.questionService.validateQuestions(questions);
 
         sharedWithUserIds = await this.validateSharedWithUserIds(sharedWithUserIds, ownerId);
 
@@ -82,17 +81,33 @@ export class QuizService {
         return newQuiz;
     }
 
-    public async updateQuizById(quizId: number, requesterId: number, patchQuiz: PatchQuiz) {
-        if (patchQuiz.sharedWithUserIds) {
-            patchQuiz.sharedWithUserIds = await this.validateSharedWithUserIds(
-                patchQuiz.sharedWithUserIds,
+    public async appendQuizQuestionsById(quizId: number, questions: CreateQuestion[]) {
+        this.questionService.validateQuestions(questions);
+
+        return await this.quizRepository.update({
+            where: { id: quizId },
+            data: {
+                questions: {
+                    createMany: {
+                        data: questions,
+                    },
+                },
+            },
+            include: { questions: true },
+        });
+    }
+
+    public async updateQuizById(quizId: number, requesterId: number, updateQuiz: UpdateQuiz) {
+        if (updateQuiz.sharedWithUserIds) {
+            updateQuiz.sharedWithUserIds = await this.validateSharedWithUserIds(
+                updateQuiz.sharedWithUserIds,
                 requesterId,
             );
         }
 
         return await this.quizRepository.update({
             where: { id: quizId },
-            data: patchQuiz,
+            data: updateQuiz,
             include: { questions: true },
         });
     }
@@ -101,10 +116,6 @@ export class QuizService {
         await this.quizRepository.delete({
             where: { id: quizId },
         });
-    }
-
-    public canUserAccess(quiz: Quiz, userId: number) {
-        return quiz.ownerId === userId || quiz.isPublic || quiz.sharedWithUserIds.includes(userId);
     }
 
     public async validateSharedWithUserIds(sharedWithUserIds: number[], requesterId: number) {
@@ -134,5 +145,5 @@ export class QuizService {
     }
 }
 
-const singleton = new QuizService(prisma.user, prisma.quiz);
+const singleton = new QuizService(prisma.user, prisma.quiz, questionService);
 export default singleton;

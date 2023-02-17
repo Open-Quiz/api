@@ -1917,15 +1917,6 @@ resolve@^1.22.1:
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
-rest-zod-prisma@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/rest-zod-prisma/-/rest-zod-prisma-1.0.5.tgz#40f84c6f03c66884e35436b03be4da6878490572"
-  integrity sha512-rGgPYs3nXTRcunisWhJYyGHrTXWQCvklQueb6HCLjxzkBive788EWTYy6zDBRq4HikLKW6Nt4pFGFsY8WFjrNg==
-  dependencies:
-    "@prisma/generator-helper" "~3.8.1"
-    parenthesis "^3.1.8"
-    ts-morph "^13.0.2"
-
 reusify@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/reusify/-/reusify-1.0.4.tgz#90da382b1e126efc02146e90845a88db12925d76"
@@ -2479,6 +2470,15 @@ yocto-queue@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-1.0.0.tgz#7f816433fb2cbc511ec8bf7d263c3b58a1a3c251"
   integrity sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==
+
+zod-prisma@^0.5.4:
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/zod-prisma/-/zod-prisma-0.5.4.tgz#f1c4d107cb9e4c666e2432017e6dcc390ef23700"
+  integrity sha512-5Ca4Qd1a1jy1T/NqCEpbr0c+EsbjJfJ/7euEHob3zDvtUK2rTuD1Rc/vfzH8q8PtaR2TZbysD88NHmrLwpv3Xg==
+  dependencies:
+    "@prisma/generator-helper" "~3.8.1"
+    parenthesis "^3.1.8"
+    ts-morph "^13.0.2"
 
 zod@^3.20.2:
   version "3.20.2"

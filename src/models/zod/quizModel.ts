@@ -1,13 +1,21 @@
 import { Quiz, QuizQuestion } from '@prisma/client';
 import { z } from 'zod';
-import { CreateQuizModel, CreateQuizQuestionModel } from '../../zod';
+import { QuizModel } from './generated';
+import { CreateQuestionModel } from './quizQuestionModel';
 
-export const CompleteCreateQuizModel = CreateQuizModel.omit({ ownerId: true }).extend({
-    questions: CreateQuizQuestionModel.omit({ quizId: true }).array().optional(),
-});
+const optionalKeys = {
+    isPublic: true,
+    sharedWithUserIds: true,
+} as const;
 
-export type CompleteCreateQuiz = z.infer<typeof CompleteCreateQuizModel>;
+export const CreateQuizModel = QuizModel.omit({ ...optionalKeys, id: true, ownerId: true })
+    .extend({
+        questions: CreateQuestionModel.array(),
+    })
+    .merge(QuizModel.pick(optionalKeys).partial());
 
-export type CompleteQuiz = Quiz & {
-    questions: QuizQuestion[];
-};
+export const UpdateQuizModel = CreateQuizModel.omit({ questions: true }).partial();
+
+export type CompleteQuiz = Quiz & { questions: QuizQuestion[] };
+export type CreateQuiz = z.infer<typeof CreateQuizModel>;
+export type UpdateQuiz = z.infer<typeof UpdateQuizModel>;

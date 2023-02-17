@@ -3,8 +3,8 @@ generator client {
 }
 
 generator zod {
-  provider = "rest-zod-prisma"
-  output  = "../src/zod"
+  provider = "zod-prisma"
+  output  = "../src/models/zod/generated"
 }
 
 datasource db {
