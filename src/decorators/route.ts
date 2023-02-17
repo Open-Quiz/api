@@ -1,4 +1,4 @@
-import { Method } from '../types/enums/MethodTypes';
+import { Method } from '../types/enums/Method';
 import { attachMetadata, hasMeta, Metadata } from '../utility/metadata';
 
 export type RouteMeta = {
@@ -12,6 +12,10 @@ export function hasRouteMeta(obj: any): obj is Metadata<{ route: RouteMeta }> {
 
 export function Get(route = '/') {
     return Route(Method.GET, route);
+}
+
+export function Put(route = '/') {
+    return Route(Method.PUT, route);
 }
 
 export function Post(route = '/') {

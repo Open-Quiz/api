@@ -2,7 +2,7 @@ import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
 import { hasControllerMeta } from '../../decorators/controller';
 import { hasRouteMeta } from '../../decorators/route';
-import { Method } from '../../types/enums/MethodTypes';
+import { Method } from '../../types/enums/Method';
 
 type Routes = Record<string, { method: Method; handler: RequestHandler }[]>;
 
@@ -14,16 +14,19 @@ function generateRouter(routes: Routes) {
 
         for (const handlerMeta of routes[routeUrl]) {
             switch (handlerMeta.method) {
-                case 'GET':
+                case Method.GET:
                     routeBuilder.get(handlerMeta.handler);
                     break;
-                case 'POST':
+                case Method.PUT:
+                    routeBuilder.put(handlerMeta.handler);
+                    break;
+                case Method.POST:
                     routeBuilder.post(handlerMeta.handler);
                     break;
-                case 'PATCH':
+                case Method.PATCH:
                     routeBuilder.patch(handlerMeta.handler);
                     break;
-                case 'DELETE':
+                case Method.DELETE:
                     routeBuilder.delete(handlerMeta.handler);
                     break;
             }
