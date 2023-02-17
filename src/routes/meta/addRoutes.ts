@@ -1,35 +1,32 @@
 import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
 import { hasControllerMeta } from '../../decorators/controller';
-import { hasRouteMeta } from '../../decorators/route';
+import { hasRouteMeta, RouteMeta } from '../../decorators/route';
 import { Method } from '../../types/enums/Method';
 
-type Routes = Record<string, { method: Method; handler: RequestHandler }[]>;
+type Routes = (RouteMeta & { handler: RequestHandler })[];
 
 function generateRouter(routes: Routes) {
     const router = Router();
 
-    for (const routeUrl in routes) {
-        const routeBuilder = router.route(routeUrl);
-
-        for (const handlerMeta of routes[routeUrl]) {
-            switch (handlerMeta.method) {
-                case Method.GET:
-                    routeBuilder.get(handlerMeta.handler);
-                    break;
-                case Method.PUT:
-                    routeBuilder.put(handlerMeta.handler);
-                    break;
-                case Method.POST:
-                    routeBuilder.post(handlerMeta.handler);
-                    break;
-                case Method.PATCH:
-                    routeBuilder.patch(handlerMeta.handler);
-                    break;
-                case Method.DELETE:
-                    routeBuilder.delete(handlerMeta.handler);
-                    break;
-            }
+    for (const route of routes) {
+        const args = [route.route, route.handler] as const;
+        switch (route.method) {
+            case Method.GET:
+                router.get(...args);
+                break;
+            case Method.PUT:
+                router.put(...args);
+                break;
+            case Method.POST:
+                router.post(...args);
+                break;
+            case Method.PATCH:
+                router.patch(...args);
+                break;
+            case Method.DELETE:
+                router.delete(...args);
+                break;
         }
     }
 
@@ -37,23 +34,16 @@ function generateRouter(routes: Routes) {
 }
 
 function generateRoutes(controller: object): Routes {
-    const routes: Routes = {};
+    const routes: Routes = [];
 
     const proto = controller.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach((key) => {
         const descriptor = Object.getOwnPropertyDescriptor(proto, key);
         if (descriptor && typeof descriptor.value === 'function' && hasRouteMeta(descriptor.value)) {
-            const meta = descriptor.value.metadata.route;
-            if (!(meta.route in routes)) {
-                routes[meta.route] = [];
-            }
-
             const handler = descriptor.value as unknown as RequestHandler;
+            const meta = descriptor.value.metadata.route;
 
-            routes[meta.route].push({
-                method: meta.method,
-                handler: (req, res, next) => handler(req, res, next),
-            });
+            routes.push({ ...meta, handler });
         }
     });
 

@@ -1,9 +1,8 @@
-import { Express, NextFunction, Request, Response, Router } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import Controller from '../decorators/controller';
 import { Delete, Get, Patch, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
-import validate from '../middleware/validationHandler';
-import quizDto, { QuizDto } from '../models/dtos/quizDto';
+import quizDto from '../models/dtos/quizDto';
 import { IdModel } from '../models/zod/idModel';
 import { CompleteCreateQuiz, CompleteCreateQuizModel } from '../models/zod/quizModel';
 import { QuizService } from '../services/quizService';
@@ -16,23 +15,6 @@ export default class QuizController {
 
     constructor(quizService: QuizService) {
         this.quizService = quizService;
-    }
-
-    public applyRoutes(app: Express): void {
-        const routes = Router();
-
-        routes
-            .route('/')
-            .get(this.getAllQuizzes)
-            .post(validate({ body: CompleteCreateQuizModel }), this.createQuiz);
-
-        routes
-            .route('/:id')
-            .get(validate({ param: IdModel }), this.getQuizById)
-            .patch(validate({ param: IdModel, body: PatchQuizModel }), this.updateQuizById)
-            .delete(validate({ param: IdModel }), this.deleteQuizById);
-
-        app.use('/api/quizzes', routes);
     }
 
     @Get()
@@ -67,7 +49,6 @@ export default class QuizController {
     @Validate({ param: IdModel, body: PatchQuizModel })
     public async updateQuizById(req: Request<IdParam, undefined, PatchQuiz>, res: Response, next: NextFunction) {
         try {
-            console.log('PATCH: id', this);
             const quiz = await this.quizService.getQuizById(req.params.id);
 
             if (quiz.ownerId !== req.requester.id) {
