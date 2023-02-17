@@ -46,7 +46,7 @@ function generateRoutes(controller: object): Routes {
     Object.getOwnPropertyNames(proto).forEach((key) => {
         const descriptor = Object.getOwnPropertyDescriptor(proto, key);
         if (descriptor && isRequestHandler(descriptor.value)) {
-            const handler = catchErrorWrapper(descriptor.value);
+            const handler = catchErrorWrapper(descriptor.value.bind(controller));
             const meta = descriptor.value.metadata.route;
 
             routes.push({ ...meta, handler });
