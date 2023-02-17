@@ -26,58 +26,42 @@ export default class QuizController {
     @Post()
     @Validate({ body: CompleteCreateQuizModel })
     public async createQuiz(req: Request<unknown, unknown, CompleteCreateQuiz>, res: Response, next: NextFunction) {
-        try {
-            const newQuiz = await this.quizService.createQuiz(req.body, req.requester.id);
-            res.created(quizDto(newQuiz));
-        } catch (err) {
-            next(err);
-        }
+        const newQuiz = await this.quizService.createQuiz(req.body, req.requester.id);
+        res.created(quizDto(newQuiz));
     }
 
     @Get('/:id')
     @Validate({ param: IdModel })
-    public async getQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
-        try {
-            const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
-            res.ok(quizDto(quiz));
-        } catch (err) {
-            next(err);
-        }
+    public async getQuizById(req: Request<IdParam>, res: Response) {
+        const quiz = await this.quizService.getViewableQuizById(req.params.id, req.requester.id);
+        res.ok(quizDto(quiz));
     }
 
     @Patch('/:id')
     @Validate({ param: IdModel, body: PatchQuizModel })
     public async updateQuizById(req: Request<IdParam, undefined, PatchQuiz>, res: Response, next: NextFunction) {
-        try {
-            const quiz = await this.quizService.getQuizById(req.params.id);
+        const quiz = await this.quizService.getQuizById(req.params.id);
 
-            if (quiz.ownerId !== req.requester.id) {
-                return res.forbidden('Only the owner can update a quiz');
-            }
-
-            const updatedQuiz = await this.quizService.updateQuizById(req.params.id, req.requester.id, req.body);
-
-            res.ok(quizDto(updatedQuiz));
-        } catch (err) {
-            next(err);
+        if (quiz.ownerId !== req.requester.id) {
+            return res.forbidden('Only the owner can update a quiz');
         }
+
+        const updatedQuiz = await this.quizService.updateQuizById(req.params.id, req.requester.id, req.body);
+
+        res.ok(quizDto(updatedQuiz));
     }
 
     @Delete('/:id')
     @Validate({ param: IdModel })
     public async deleteQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
-        try {
-            const quiz = await this.quizService.getQuizById(req.params.id);
+        const quiz = await this.quizService.getQuizById(req.params.id);
 
-            if (quiz.ownerId !== req.requester.id) {
-                return res.forbidden('Only the owner can delete a quiz');
-            }
-
-            await this.quizService.deleteQuizById(req.params.id);
-
-            res.noContent();
-        } catch (err) {
-            next(err);
+        if (quiz.ownerId !== req.requester.id) {
+            return res.forbidden('Only the owner can delete a quiz');
         }
+
+        await this.quizService.deleteQuizById(req.params.id);
+
+        res.noContent();
     }
 }

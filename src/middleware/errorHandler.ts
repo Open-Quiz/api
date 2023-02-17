@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ZodError, ZodIssue } from 'zod';
 import ApiError from '../errors/apiError';
 import BadRequestError from '../errors/badRequestError';
 import { BadRequestErrorMessage } from '../types/augmentation/expressAugmentation';
 
 // For Express to register this middleware as an error handler it **must** have 4 parameters.
-export default function ErrorHandler(
+export default function errorHandler(
     err: ZodError | BadRequestError | ApiError,
     req: Request,
     res: Response,
@@ -18,6 +18,15 @@ export default function ErrorHandler(
     } else if (err instanceof ApiError) {
         return res.status(err.statusCode).json(err.body);
     }
+}
+
+export function catchErrorWrapper(handler: RequestHandler): RequestHandler {
+    return (req, res, next) => {
+        const result = handler(req, res, next);
+        return Promise.resolve(result).catch((err) => {
+            next(err);
+        });
+    };
 }
 
 function parseZodIssue(issue: ZodIssue): BadRequestErrorMessage {

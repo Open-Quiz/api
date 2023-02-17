@@ -2,9 +2,9 @@ import express from 'express';
 import config from '../config';
 import QuizController from '../controllers/quizController';
 import authenticationHandler from '../middleware/authenticationHandler';
-import ErrorHandler from '../middleware/errorHandler';
+import errorHandler from '../middleware/errorHandler';
 import { quizQuestionRoutes } from '../routes';
-import { useRoutes } from '../routes/meta/addRoutes';
+import { useRoutes } from '../routes/meta/useRoutes';
 import quizService from '../services/quizService';
 
 // Apply module augmentation
@@ -20,7 +20,7 @@ export default function createApp() {
     app.use('/api/quizzes/questions', quizQuestionRoutes);
     useRoutes(app, new QuizController(quizService));
 
-    app.use(ErrorHandler);
+    app.use(errorHandler);
 
     const server = app.listen(config.api.port, () => {
         console.log(`⚡[server]: Server is running on port ${config.api.port}`);

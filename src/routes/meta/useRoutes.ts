@@ -2,9 +2,15 @@ import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
 import { hasControllerMeta } from '../../decorators/controller';
 import { hasRouteMeta, RouteMeta } from '../../decorators/route';
+import { catchErrorWrapper } from '../../middleware/errorHandler';
 import { Method } from '../../types/enums/Method';
+import { Metadata } from '../../utility/metadata';
 
-type Routes = (RouteMeta & { handler: RequestHandler })[];
+type Routes = (RouteMeta['route'] & { handler: RequestHandler })[];
+
+function isRequestHandler(handler: any): handler is RequestHandler & Metadata<RouteMeta> {
+    return typeof handler === 'function' && hasRouteMeta(handler);
+}
 
 function generateRouter(routes: Routes) {
     const router = Router();
@@ -39,8 +45,8 @@ function generateRoutes(controller: object): Routes {
     const proto = controller.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach((key) => {
         const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-        if (descriptor && typeof descriptor.value === 'function' && hasRouteMeta(descriptor.value)) {
-            const handler = descriptor.value as unknown as RequestHandler;
+        if (descriptor && isRequestHandler(descriptor.value)) {
+            const handler = catchErrorWrapper(descriptor.value);
             const meta = descriptor.value.metadata.route;
 
             routes.push({ ...meta, handler });
