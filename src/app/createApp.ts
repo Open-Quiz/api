@@ -1,7 +1,7 @@
 import express from 'express';
 import config from '../config';
 import QuizController from '../controllers/quizController';
-import QuizQuestionController from '../controllers/quizQuestionController';
+import QuizQuestionController from '../controllers/questionController';
 import authenticationHandler from '../middleware/authenticationHandler';
 import errorHandler from '../middleware/errorHandler';
 import { useRoutes } from '../routes/meta/useRoutes';

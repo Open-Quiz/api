@@ -4,7 +4,7 @@ import BadRequestError from '../errors/badRequestError';
 import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
 import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
-import { CreateQuestion } from '../models/zod/quizQuestionModel';
+import { CreateQuestion } from '../models/zod/questionModel';
 import questionService, { QuestionService } from './questionService';
 import { canUserAccess } from './userService';
 

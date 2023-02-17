@@ -3,10 +3,9 @@ import Controller from '../decorators/controller';
 import { Delete, Get, Patch, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
 import quizDto from '../models/dtos/quizDto';
-import { AppendQuizQuestions, AppendQuizQuestionsModel } from '../models/zod/quizQuestionModel';
-import { IdModel } from '../models/zod/idModel';
+import { AppendQuestions, AppendQuestionsModel } from '../models/zod/questionModel';
+import { IdModel, IdParam } from '../models/zod/idModel';
 import { QuizService } from '../services/quizService';
-import IdParam from '../types/interfaces/idParam';
 import { CreateQuiz, CreateQuizModel, UpdateQuiz, UpdateQuizModel } from '../models/zod/quizModel';
 
 @Controller('/api/quizzes')
@@ -52,8 +51,8 @@ export default class QuizController {
     }
 
     @Patch('/:id')
-    @Validate({ param: IdModel, body: AppendQuizQuestionsModel })
-    public async appendQuizQuestionsById(req: Request<IdParam, undefined, AppendQuizQuestions>, res: Response) {
+    @Validate({ param: IdModel, body: AppendQuestionsModel })
+    public async appendQuizQuestionsById(req: Request<IdParam, undefined, AppendQuestions>, res: Response) {
         const quiz = await this.quizService.getQuizById(req.params.id);
 
         if (quiz.ownerId !== req.requester.id) {

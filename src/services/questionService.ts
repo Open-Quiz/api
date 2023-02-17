@@ -4,7 +4,7 @@ import BadRequestError from '../errors/badRequestError';
 import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
 import questionDto from '../models/dtos/questionDto';
-import { CreateQuestion, UpdateQuestion } from '../models/zod/quizQuestionModel';
+import { CreateQuestion, UpdateQuestion, UpdateQuestionStats } from '../models/zod/questionModel';
 import { canUserAccess } from './userService';
 
 export class QuestionService {
@@ -14,7 +14,7 @@ export class QuestionService {
         this.questionRepository = questionRepository;
     }
 
-    private async getQuestionWithQuizById(questionId: number) {
+    public async getQuestionWithQuizById(questionId: number) {
         const question = await this.questionRepository.findFirst({
             where: { id: questionId },
             include: { quiz: true },
@@ -27,6 +27,22 @@ export class QuestionService {
         return question;
     }
 
+    public async getQuestionsWithQuizById(questionIds: number[]) {
+        const questions = await this.questionRepository.findMany({
+            where: {
+                id: { in: questionIds },
+            },
+            include: { quiz: true },
+        });
+
+        if (questions.length !== questionIds.length) {
+            const nonExistentIds = questions.map((question) => question.id).filter((id) => !questionIds.includes(id));
+            throw new NotFoundError(`There is no quiz question with the ids ${nonExistentIds}`);
+        }
+
+        return questions;
+    }
+
     public async getViewableQuestionById(questionId: number, requesterId: number) {
         const question = await this.getQuestionWithQuizById(questionId);
 
@@ -37,7 +53,44 @@ export class QuestionService {
         return questionDto(question);
     }
 
-    public async updateQuestionById(questionId: number, requesterId: number, updatedQuestion: UpdateQuestion) {}
+    public async updateQuestionById(questionId: number, updatedQuestion: UpdateQuestion) {
+        return await this.questionRepository.update({
+            where: { id: questionId },
+            data: updatedQuestion,
+        });
+    }
+
+    public async updateQuestionStats(questionId: number, updateQuestionStats: UpdateQuestionStats) {
+        return await this.questionRepository.update({
+            where: { id: questionId },
+            data: {
+                totalCorrectAttempts: {
+                    increment: updateQuestionStats.incrementCorrectAttempts ?? 0,
+                },
+                totalIncorrectAttempts: {
+                    increment: updateQuestionStats.incrementIncorrectAttempts ?? 0,
+                },
+            },
+        });
+    }
+
+    public async deleteQuestions(questionIds: number[]) {
+        const result = await this.questionRepository.deleteMany({
+            where: {
+                id: {
+                    in: questionIds,
+                },
+            },
+        });
+
+        return result.count;
+    }
+
+    public async deleteQuestion(questionId: number) {
+        await this.questionRepository.delete({
+            where: { id: questionId },
+        });
+    }
 
     public validateQuestion(question: CreateQuestion) {
         if (question.correctOption >= question.options.length) {

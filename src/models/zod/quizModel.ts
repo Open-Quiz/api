@@ -1,7 +1,7 @@
 import { Quiz, QuizQuestion } from '@prisma/client';
 import { z } from 'zod';
 import { QuizModel } from './generated';
-import { CreateQuestionModel } from './quizQuestionModel';
+import { CreateQuestionModel } from './questionModel';
 
 const optionalKeys = {
     isPublic: true,
