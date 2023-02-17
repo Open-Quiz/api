@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import Controller from '../decorators/controller';
+import Use from '../decorators/middleware';
 import { Delete, Get, Patch, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
+import validate from '../middleware/validationHandler';
 import quizDto from '../models/dtos/quizDto';
 import { IdModel } from '../models/zod/idModel';
 import { CompleteCreateQuiz, CompleteCreateQuizModel } from '../models/zod/quizModel';
@@ -52,7 +54,7 @@ export default class QuizController {
     }
 
     @Delete('/:id')
-    @Validate({ param: IdModel })
+    @Use(validate({ param: IdModel }))
     public async deleteQuizById(req: Request<IdParam>, res: Response, next: NextFunction) {
         const quiz = await this.quizService.getQuizById(req.params.id);
 
