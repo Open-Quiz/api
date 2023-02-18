@@ -19,8 +19,11 @@ export default function createApp() {
     app.use(express.urlencoded({ extended: false }));
     app.use(authenticationHandler);
 
-    useRoutes(app, new QuizQuestionController(questionService, accessService));
-    useRoutes(app, new QuizController(quizService, accessService));
+    useRoutes(
+        app,
+        new QuizQuestionController(questionService, accessService),
+        new QuizController(quizService, accessService),
+    );
 
     app.use(errorHandler);
 

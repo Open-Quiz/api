@@ -1,13 +1,6 @@
 import * as jose from 'jose';
 import config from '../config';
-import { ObjectValues } from '../types/utility';
-
-export const TokenType = {
-    Access: 'access',
-    Refresh: 'refresh',
-} as const;
-
-export type TokenType = ObjectValues<typeof TokenType>;
+import { TokenType } from '../types/enums/TokenType';
 
 export class TokenService {
     public async verifyToken(token: string, tokenType: TokenType) {

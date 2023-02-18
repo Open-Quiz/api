@@ -56,15 +56,17 @@ function generateRoutes(controller: object): Routes {
     return routes;
 }
 
-export function useRoutes(app: Express, controller: Object) {
-    if (!hasControllerMeta(controller.constructor)) {
-        return;
+export function useRoutes(app: Express, ...controllers: Object[]) {
+    for (const controller of controllers) {
+        if (!hasControllerMeta(controller.constructor)) {
+            return;
+        }
+
+        const baseRoute = controller.constructor.metadata.controller.route;
+
+        const routes = generateRoutes(controller);
+        const router = generateRouter(routes);
+
+        app.use(baseRoute, router);
     }
-
-    const baseRoute = controller.constructor.metadata.controller.route;
-
-    const routes = generateRoutes(controller);
-    const router = generateRouter(routes);
-
-    app.use(baseRoute, router);
 }
