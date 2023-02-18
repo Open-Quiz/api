@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import tokenService, { TokenType } from '../services/tokenService';
+import tokenService from '../services/tokenService';
 import * as jose from 'jose';
 import prisma from '../client/instance';
+import { TokenType } from '../types/enums/TokenType';
 
 export default async function authenticationHandler(req: Request, res: Response, next: NextFunction) {
     if (!req.headers.authorization) {

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { ErrorResponse } from '../types/augmentation/expressAugmentation';
-import tokenService, { TokenType } from '../services/tokenService';
+import tokenService from '../services/tokenService';
 import * as jose from 'jose';
 import request from '../testing/request';
 import setupTestApp from '../testing/setupTestApp';
 import config from '../config';
+import { TokenType } from '../types/enums/TokenType';
 
 setupTestApp();
 

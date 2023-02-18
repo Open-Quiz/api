@@ -9,6 +9,7 @@ import { User } from '@prisma/client';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
 import setupTestApp from '../testing/setupTestApp';
 import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
+import { AppendQuestions } from '../models/zod/questionModel';
 
 setupTestApp();
 
@@ -145,10 +146,12 @@ describe('@Integration - Quiz Controller', async () => {
 
             const res = await request.patch('/api/quizzes/2').send(patchQuiz).set('authorization', user1AccessToken);
 
-            quiz2 = { ...quiz2, ...patchQuiz };
+            const expected = { ...quiz2, ...patchQuiz };
 
             expect(res.statusCode).toBe(200);
-            expect(res.body).toStrictEqual<QuizDto>(quiz2);
+            expect(res.body).toStrictEqual<QuizDto>(expected);
+
+            quiz2 = expected;
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
@@ -286,6 +289,79 @@ describe('@Integration - Quiz Controller', async () => {
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
                 error: 'Only the owner can delete a quiz',
+            });
+        });
+    });
+
+    describe('PATCH /api/quizzes/:id/questions', async () => {
+        const questions: AppendQuestions = {
+            questions: [mockQuizQuestion, mockQuizQuestion],
+        };
+
+        it('appends the questions to the quiz', async () => {
+            const res = await request
+                .patch('/api/quizzes/2/questions')
+                .send(questions)
+                .set('authorization', user1AccessToken);
+
+            const expected = {
+                ...quiz2,
+                questions: [
+                    ...quiz2.questions,
+                    {
+                        id: 9,
+                        ...mockQuizQuestion,
+                    },
+                    {
+                        id: 10,
+                        ...mockQuizQuestion,
+                    },
+                ],
+            };
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body).toStrictEqual<QuizDto>(expected);
+
+            quiz2 = expected;
+        });
+
+        it('returns a not found response when there is no quiz with the id', async () => {
+            const res = await request
+                .patch('/api/quizzes/3/questions')
+                .send(questions)
+                .set('authorization', user1AccessToken);
+
+            expect(res.statusCode).toBe(404);
+            expect(res.body).toStrictEqual<ErrorResponse>({
+                error: 'There is no quiz with the id 3',
+            });
+        });
+
+        it('returns a forbidden response if you are not the owner of the quiz', async () => {
+            const res = await request
+                .patch('/api/quizzes/2/questions')
+                .send(questions)
+                .set('authorization', user2AccessToken);
+
+            expect(res.statusCode).toBe(403);
+            expect(res.body).toStrictEqual<ErrorResponse>({
+                error: 'Only the owner can update a quiz',
+            });
+        });
+
+        it('returns a bad request response if the correct option is not an index of options', async () => {
+            const questions: AppendQuestions = {
+                questions: [{ ...mockQuizQuestion, options: ['A', 'B'], correctOption: 2 }],
+            };
+
+            const res = await request
+                .patch('/api/quizzes/2/questions')
+                .send(questions)
+                .set('authorization', user1AccessToken);
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body).toStrictEqual<BadRequestResponse>({
+                errors: [{ path: 'correctOption', message: 'The correct option must be an index of options' }],
             });
         });
     });

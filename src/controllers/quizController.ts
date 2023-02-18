@@ -53,20 +53,6 @@ export default class QuizController {
         res.ok(quizDto(updatedQuiz));
     }
 
-    @Patch('/:id')
-    @Validate({ param: IdModel, body: AppendQuestionsModel })
-    public async appendQuizQuestionsById(req: Request<IdParam, undefined, AppendQuestions>, res: Response) {
-        const quiz = await this.quizService.getQuizById(req.params.id);
-
-        if (!this.accessService.canUserModify(quiz, req.requester.id)) {
-            return res.forbidden('Only the owner can update a quiz');
-        }
-
-        const updatedQuiz = await this.quizService.appendQuizQuestionsById(req.params.id, req.body.questions);
-
-        res.ok(quizDto(updatedQuiz));
-    }
-
     @Delete('/:id')
     @Validate({ param: IdModel })
     public async deleteQuizById(req: Request<IdParam>, res: Response) {
@@ -79,5 +65,19 @@ export default class QuizController {
         await this.quizService.deleteQuizById(req.params.id);
 
         res.noContent();
+    }
+
+    @Patch('/:id/questions')
+    @Validate({ param: IdModel, body: AppendQuestionsModel })
+    public async appendQuizQuestionsById(req: Request<IdParam, undefined, AppendQuestions>, res: Response) {
+        const quiz = await this.quizService.getQuizById(req.params.id);
+
+        if (!this.accessService.canUserModify(quiz, req.requester.id)) {
+            return res.forbidden('Only the owner can update a quiz');
+        }
+
+        const updatedQuiz = await this.quizService.appendQuizQuestionsById(req.params.id, req.body.questions);
+
+        res.ok(quizDto(updatedQuiz));
     }
 }
