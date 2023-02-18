@@ -6,21 +6,24 @@ import NotFoundError from '../errors/notFoundError';
 import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
 import { CreateQuestion } from '../models/zod/questionModel';
 import questionService, { QuestionService } from './questionService';
-import { canUserAccess } from './userService';
+import accessService, { AccessService } from './accessService';
 
 export class QuizService {
     private readonly userRepository: Prisma.UserDelegate<undefined>;
     private readonly quizRepository: Prisma.QuizDelegate<undefined>;
     private readonly questionService: QuestionService;
+    private readonly accessService: AccessService;
 
     constructor(
         userRepository: Prisma.UserDelegate<undefined>,
         quizRepository: Prisma.QuizDelegate<undefined>,
         questionService: QuestionService,
+        accessService: AccessService,
     ) {
         this.userRepository = userRepository;
         this.quizRepository = quizRepository;
         this.questionService = questionService;
+        this.accessService = accessService;
     }
 
     public async getAllViewableQuizzes(userId: number) {
@@ -52,7 +55,7 @@ export class QuizService {
     public async getViewableQuizById(quizId: number, requesterId: number) {
         const quiz = await this.getQuizById(quizId);
 
-        if (!canUserAccess(quiz, requesterId)) {
+        if (!this.accessService.canUserAccess(quiz, requesterId)) {
             throw new ForbiddenError(`You do not have access to the quiz ${quizId}`);
         }
 
@@ -124,9 +127,7 @@ export class QuizService {
         const sharedWithUserIdsThatExist = (
             await this.userRepository.findMany({
                 where: {
-                    id: {
-                        in: distinctSharedWithUserIds,
-                    },
+                    id: { in: distinctSharedWithUserIds },
                 },
             })
         ).map((user) => user.id);
@@ -145,5 +146,5 @@ export class QuizService {
     }
 }
 
-const singleton = new QuizService(prisma.user, prisma.quiz, questionService);
+const singleton = new QuizService(prisma.user, prisma.quiz, questionService, accessService);
 export default singleton;

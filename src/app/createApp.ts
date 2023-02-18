@@ -7,6 +7,7 @@ import errorHandler from '../middleware/errorHandler';
 import { useRoutes } from '../routes/meta/useRoutes';
 import questionService from '../services/questionService';
 import quizService from '../services/quizService';
+import accessService from '../services/accessService';
 
 // Apply module augmentation
 import '../types/augmentation/expressAugmentation';
@@ -18,8 +19,8 @@ export default function createApp() {
     app.use(express.urlencoded({ extended: false }));
     app.use(authenticationHandler);
 
-    useRoutes(app, new QuizQuestionController(questionService));
-    useRoutes(app, new QuizController(quizService));
+    useRoutes(app, new QuizQuestionController(questionService, accessService));
+    useRoutes(app, new QuizController(quizService, accessService));
 
     app.use(errorHandler);
 

@@ -7,13 +7,16 @@ import { AppendQuestions, AppendQuestionsModel } from '../models/zod/questionMod
 import { IdModel, IdParam } from '../models/zod/idModel';
 import { QuizService } from '../services/quizService';
 import { CreateQuiz, CreateQuizModel, UpdateQuiz, UpdateQuizModel } from '../models/zod/quizModel';
+import { AccessService } from '../services/accessService';
 
 @Controller('/api/quizzes')
 export default class QuizController {
     private readonly quizService: QuizService;
+    private readonly accessService: AccessService;
 
-    constructor(quizService: QuizService) {
+    constructor(quizService: QuizService, accessService: AccessService) {
         this.quizService = quizService;
+        this.accessService = accessService;
     }
 
     @Get()
@@ -41,7 +44,7 @@ export default class QuizController {
     public async updateQuizById(req: Request<IdParam, undefined, UpdateQuiz>, res: Response) {
         const quiz = await this.quizService.getQuizById(req.params.id);
 
-        if (quiz.ownerId !== req.requester.id) {
+        if (!this.accessService.canUserModify(quiz, req.requester.id)) {
             return res.forbidden('Only the owner can update a quiz');
         }
 
@@ -55,7 +58,7 @@ export default class QuizController {
     public async appendQuizQuestionsById(req: Request<IdParam, undefined, AppendQuestions>, res: Response) {
         const quiz = await this.quizService.getQuizById(req.params.id);
 
-        if (quiz.ownerId !== req.requester.id) {
+        if (!this.accessService.canUserModify(quiz, req.requester.id)) {
             return res.forbidden('Only the owner can update a quiz');
         }
 
@@ -69,7 +72,7 @@ export default class QuizController {
     public async deleteQuizById(req: Request<IdParam>, res: Response) {
         const quiz = await this.quizService.getQuizById(req.params.id);
 
-        if (quiz.ownerId !== req.requester.id) {
+        if (!this.accessService.canUserModify(quiz, req.requester.id)) {
             return res.forbidden('Only the owner can delete a quiz');
         }
 

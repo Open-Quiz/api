@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import Controller from '../decorators/controller';
 import { Delete, Get, Patch } from '../decorators/route';
 import Validate from '../decorators/validate';
+import ForbiddenError from '../errors/forbiddenError';
+import questionDto from '../models/dtos/questionDto';
 import { IdModel, IdParam } from '../models/zod/idModel';
 import {
     QuestionIds,
@@ -11,15 +13,17 @@ import {
     UpdateQuestionStats,
     UpdateQuestionStatsModel,
 } from '../models/zod/questionModel';
+import { AccessService } from '../services/accessService';
 import { QuestionService } from '../services/questionService';
-import { canUserAccess } from '../services/userService';
 
 @Controller('/api/questions')
 export default class QuizQuestionController {
     private readonly questionService: QuestionService;
+    private readonly accessService: AccessService;
 
-    constructor(questionService: QuestionService) {
+    constructor(questionService: QuestionService, accessService: AccessService) {
         this.questionService = questionService;
+        this.accessService = accessService;
     }
 
     @Delete()
@@ -28,7 +32,7 @@ export default class QuizQuestionController {
         const questions = await this.questionService.getQuestionsWithQuizById(req.body.questionIds);
 
         const cantAccessQuestionIds = questions
-            .filter((question) => question.quiz.ownerId !== req.requester.id)
+            .filter((question) => !this.accessService.canUserAccess(question.quiz, req.requester.id))
             .map((question) => question.id);
 
         if (cantAccessQuestionIds.length === 0) {
@@ -43,8 +47,13 @@ export default class QuizQuestionController {
     @Get('/:id')
     @Validate({ param: IdModel })
     public async getQuestionById(req: Request<IdParam>, res: Response) {
-        const question = await this.questionService.getViewableQuestionById(req.params.id, req.requester.id);
-        res.ok(question);
+        const question = await this.questionService.getQuestionWithQuizById(req.params.id);
+
+        if (!this.accessService.canUserAccess(question.quiz, req.requester.id)) {
+            throw new ForbiddenError(`You do not have access to the quiz question ${req.params.id}`);
+        }
+
+        res.ok(questionDto(question));
     }
 
     @Patch('/:id')
@@ -52,7 +61,7 @@ export default class QuizQuestionController {
     public async updateQuestionById(req: Request<IdParam, unknown, UpdateQuestion>, res: Response) {
         const question = await this.questionService.getQuestionWithQuizById(req.params.id);
 
-        if (question.quiz.ownerId !== req.requester.id) {
+        if (!this.accessService.canUserModify(question.quiz, req.requester.id)) {
             return res.forbidden('Only the owner can update a quiz question');
         }
 
@@ -66,7 +75,7 @@ export default class QuizQuestionController {
     public async updateQuestionStats(req: Request<IdParam, unknown, UpdateQuestionStats>, res: Response) {
         const question = await this.questionService.getQuestionWithQuizById(req.params.id);
 
-        if (!canUserAccess(question.quiz, req.requester.id)) {
+        if (!this.accessService.canUserAccess(question.quiz, req.requester.id)) {
             return res.forbidden(`You do not have access to the quiz question ${req.params.id}`);
         }
 
@@ -80,7 +89,7 @@ export default class QuizQuestionController {
     public async deleteQuizQuestion(req: Request<IdParam>, res: Response) {
         const question = await this.questionService.getQuestionWithQuizById(req.params.id);
 
-        if (question.quiz.ownerId !== req.requester.id) {
+        if (!this.accessService.canUserModify(question.quiz, req.requester.id)) {
             return res.forbidden('Only the owner can delete a quiz question');
         }
 

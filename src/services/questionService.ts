@@ -1,11 +1,8 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
-import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
-import questionDto from '../models/dtos/questionDto';
 import { CreateQuestion, UpdateQuestion, UpdateQuestionStats } from '../models/zod/questionModel';
-import { canUserAccess } from './userService';
 
 export class QuestionService {
     private readonly questionRepository: Prisma.QuizQuestionDelegate<undefined>;
@@ -43,16 +40,6 @@ export class QuestionService {
         return questions;
     }
 
-    public async getViewableQuestionById(questionId: number, requesterId: number) {
-        const question = await this.getQuestionWithQuizById(questionId);
-
-        if (!canUserAccess(question.quiz, requesterId)) {
-            throw new ForbiddenError(`You do not have access to the quiz question ${questionId}`);
-        }
-
-        return questionDto(question);
-    }
-
     public async updateQuestionById(questionId: number, updatedQuestion: UpdateQuestion) {
         return await this.questionRepository.update({
             where: { id: questionId },
@@ -74,6 +61,12 @@ export class QuestionService {
         });
     }
 
+    public async deleteQuestion(questionId: number) {
+        await this.questionRepository.delete({
+            where: { id: questionId },
+        });
+    }
+
     public async deleteQuestions(questionIds: number[]) {
         const result = await this.questionRepository.deleteMany({
             where: {
@@ -84,12 +77,6 @@ export class QuestionService {
         });
 
         return result.count;
-    }
-
-    public async deleteQuestion(questionId: number) {
-        await this.questionRepository.delete({
-            where: { id: questionId },
-        });
     }
 
     public validateQuestion(question: CreateQuestion) {
