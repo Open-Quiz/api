@@ -1,9 +1,4 @@
-function required<T>(value: T | undefined): T {
-    if (value === undefined) {
-        throw new Error('Missing required environment variable');
-    }
-    return value;
-}
+import { required } from '../utility/typing';
 
 export default {
     api: {

@@ -1,4 +1,5 @@
-import { ArrayType, isArray } from './typing';
+import { ArrayType } from '../types/utility';
+import { isArray } from './typing';
 
 type ReplaceKeyType<InstanceType, Key extends keyof InstanceType, NewKeyType> = {
     [InstanceKey in keyof InstanceType]: InstanceKey extends Key ? NewKeyType : InstanceType[InstanceKey];
