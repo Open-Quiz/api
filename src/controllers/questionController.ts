@@ -35,7 +35,7 @@ export default class QuizQuestionController {
             .filter((question) => !this.accessService.canUserAccess(question.quiz, req.requester.id))
             .map((question) => question.id);
 
-        if (cantAccessQuestionIds.length === 0) {
+        if (cantAccessQuestionIds.length !== 0) {
             return res.forbidden(`You must be the owner of the quizzes ${cantAccessQuestionIds} to delete them`);
         }
 
@@ -65,21 +65,7 @@ export default class QuizQuestionController {
             return res.forbidden('Only the owner can update a quiz question');
         }
 
-        const updatedQuestion = await this.questionService.updateQuestionById(req.params.id, req.body);
-
-        res.ok(updatedQuestion);
-    }
-
-    @Patch('/:id')
-    @Validate({ param: IdModel, body: UpdateQuestionStatsModel })
-    public async updateQuestionStats(req: Request<IdParam, unknown, UpdateQuestionStats>, res: Response) {
-        const question = await this.questionService.getQuestionWithQuizById(req.params.id);
-
-        if (!this.accessService.canUserAccess(question.quiz, req.requester.id)) {
-            return res.forbidden(`You do not have access to the quiz question ${req.params.id}`);
-        }
-
-        const updatedQuestion = await this.questionService.updateQuestionStats(req.params.id, req.body);
+        const updatedQuestion = await this.questionService.updateQuestionById(question, req.params.id, req.body);
 
         res.ok(updatedQuestion);
     }
@@ -95,5 +81,19 @@ export default class QuizQuestionController {
 
         await this.questionService.deleteQuestion(question.id);
         res.noContent();
+    }
+
+    @Patch('/:id/stats')
+    @Validate({ param: IdModel, body: UpdateQuestionStatsModel })
+    public async updateQuestionStats(req: Request<IdParam, unknown, UpdateQuestionStats>, res: Response) {
+        const question = await this.questionService.getQuestionWithQuizById(req.params.id);
+
+        if (!this.accessService.canUserAccess(question.quiz, req.requester.id)) {
+            return res.forbidden(`You do not have access to the quiz question ${req.params.id}`);
+        }
+
+        const updatedQuestion = await this.questionService.updateQuestionStats(req.params.id, req.body);
+
+        res.ok(updatedQuestion);
     }
 }

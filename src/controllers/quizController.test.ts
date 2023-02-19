@@ -98,7 +98,7 @@ describe('@Integration - Quiz Controller', async () => {
     });
 
     describe('GET /api/quizzes/:id', () => {
-        it('returns the quiz with the specified id when it exists', async () => {
+        it('returns the quiz with the specified id if it exists', async () => {
             const res = await request.get('/api/quizzes/1').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);

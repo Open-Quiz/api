@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, QuizQuestion } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import NotFoundError from '../errors/notFoundError';
@@ -33,17 +33,22 @@ export class QuestionService {
         });
 
         if (questions.length !== questionIds.length) {
-            const nonExistentIds = questions.map((question) => question.id).filter((id) => !questionIds.includes(id));
+            const foundQuestionIds = questions.map((question) => question.id);
+            const nonExistentIds = questionIds.filter((id) => !foundQuestionIds.includes(id));
             throw new NotFoundError(`There is no quiz question with the ids ${nonExistentIds}`);
         }
 
         return questions;
     }
 
-    public async updateQuestionById(questionId: number, updatedQuestion: UpdateQuestion) {
+    public async updateQuestionById(currentQuestion: QuizQuestion, questionId: number, updateQuestion: UpdateQuestion) {
+        const tempUpdatedQuestion = { ...currentQuestion, ...updateQuestion };
+
+        this.validateQuestion(tempUpdatedQuestion);
+
         return await this.questionRepository.update({
             where: { id: questionId },
-            data: updatedQuestion,
+            data: updateQuestion,
         });
     }
 
