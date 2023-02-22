@@ -1,15 +1,14 @@
 import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
-import { hasControllerMeta } from '../../decorators/controller';
-import { hasRouteMeta, RouteMeta } from '../../decorators/route';
+import { getControllerMeta } from '../../decorators/controller';
+import { getRouteMeta, RouteMeta } from '../../decorators/route';
 import { catchErrorWrapper } from '../../middleware/errorHandler';
 import { Method } from '../../types/enums/Method';
-import { Metadata } from '../../utility/metadata';
 
-type Routes = (RouteMeta['route'] & { handler: RequestHandler })[];
+type Routes = (RouteMeta & { handler: RequestHandler })[];
 
-function isRequestHandler(handler: any): handler is RequestHandler & Metadata<RouteMeta> {
-    return typeof handler === 'function' && hasRouteMeta(handler);
+function isRequestHandler(handler: any): handler is RequestHandler {
+    return typeof handler === 'function'; // && hasRouteMeta(handler);
 }
 
 function generateRouter(routes: Routes) {
@@ -45,11 +44,13 @@ function generateRoutes(controller: object): Routes {
     const proto = controller.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach((key) => {
         const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-        if (descriptor && isRequestHandler(descriptor.value)) {
-            const handler = catchErrorWrapper(descriptor.value.bind(controller));
-            const meta = descriptor.value.metadata.route;
+        if (descriptor) {
+            const meta = getRouteMeta(descriptor.value);
 
-            routes.push({ ...meta, handler });
+            if (meta && isRequestHandler(descriptor.value)) {
+                const handler = catchErrorWrapper(descriptor.value.bind(controller));
+                routes.push({ ...meta, handler });
+            }
         }
     });
 
@@ -58,15 +59,14 @@ function generateRoutes(controller: object): Routes {
 
 export function useRoutes(app: Express, ...controllers: Object[]) {
     for (const controller of controllers) {
-        if (!hasControllerMeta(controller.constructor)) {
+        const controllerMeta = getControllerMeta(controller.constructor);
+        if (!controllerMeta) {
             return;
         }
-
-        const baseRoute = controller.constructor.metadata.controller.route;
 
         const routes = generateRoutes(controller);
         const router = generateRouter(routes);
 
-        app.use(baseRoute, router);
+        app.use(controllerMeta.route, router);
     }
 }

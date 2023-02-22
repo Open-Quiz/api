@@ -1,3 +1,7 @@
+// Apply module augmentation
+import '../types/augmentation/expressAugmentation';
+import 'reflect-metadata';
+
 import express from 'express';
 import config from '../config';
 import QuizController from '../controllers/quizController';
@@ -8,9 +12,6 @@ import { useRoutes } from '../routes/meta/useRoutes';
 import questionService from '../services/questionService';
 import quizService from '../services/quizService';
 import accessService from '../services/accessService';
-
-// Apply module augmentation
-import '../types/augmentation/expressAugmentation';
 
 export default function createApp() {
     const app = express();

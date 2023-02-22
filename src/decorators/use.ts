@@ -11,9 +11,6 @@ export default function Use<ParamType = ParamsDictionary, ResBody = any, ReqBody
         descriptor: TypedPropertyDescriptor<Handler>,
     ) {
         const original = descriptor.value;
-        if (!original) {
-            return;
-        }
 
         const handler = async function (
             this: ThisType<Handler>,
@@ -25,13 +22,13 @@ export default function Use<ParamType = ParamsDictionary, ResBody = any, ReqBody
                 if (err) {
                     next(err);
                 } else {
-                    Promise.resolve(original.call(this, req, res, next)).catch(next);
+                    Promise.resolve(original?.call(this, req, res, next)).catch(next);
                 }
             };
 
-            await Promise.resolve(middleware(req, res, nextFunction));
+            middleware(req, res, nextFunction);
         };
 
-        return { value: handler as Handler };
+        descriptor.value = handler as Handler;
     };
 }

@@ -1,5 +1,5 @@
 import { ZodSchema } from 'zod';
-import Use from './middleware';
+import Use from './use';
 
 export type ValidationOptions<ParamType, BodyType> = {
     param?: ZodSchema<ParamType>;
