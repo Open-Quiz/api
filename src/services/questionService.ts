@@ -5,11 +5,7 @@ import NotFoundError from '../errors/notFoundError';
 import { CreateQuestion, UpdateQuestion, UpdateQuestionStats } from '../models/zod/questionModel';
 
 export class QuestionService {
-    private readonly questionRepository: Prisma.QuizQuestionDelegate<undefined>;
-
-    constructor(questionRepository: Prisma.QuizQuestionDelegate<undefined>) {
-        this.questionRepository = questionRepository;
-    }
+    constructor(private readonly questionRepository: Prisma.QuizQuestionDelegate<undefined>) {}
 
     public async getQuestionWithQuizById(questionId: number) {
         const question = await this.questionRepository.findFirst({

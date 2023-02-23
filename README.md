@@ -46,7 +46,7 @@ The Open Quiz API is an open source API which can be used to manage the creating
 
 ### Installation
 
-1. Download the dependencies using `yarn install`. This automatically generates types for the models and validators at `src/zod`.
+1. Download the dependencies using `yarn install`. This automatically generates types for the models and validators at `src/models/zod/generated`.
 2. Create `.env.development` for the development environment variables:
     ```py
     # Optional. By default this is 8000.

@@ -11,13 +11,7 @@ import { AccessService } from '../services/accessService';
 
 @Controller('/api/quizzes')
 export default class QuizController {
-    private readonly quizService: QuizService;
-    private readonly accessService: AccessService;
-
-    constructor(quizService: QuizService, accessService: AccessService) {
-        this.quizService = quizService;
-        this.accessService = accessService;
-    }
+    constructor(private readonly quizService: QuizService, private readonly accessService: AccessService) {}
 
     @Get()
     public async getAllQuizzes(req: Request, res: Response) {

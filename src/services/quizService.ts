@@ -9,22 +9,12 @@ import questionService, { QuestionService } from './questionService';
 import accessService, { AccessService } from './accessService';
 
 export class QuizService {
-    private readonly userRepository: Prisma.UserDelegate<undefined>;
-    private readonly quizRepository: Prisma.QuizDelegate<undefined>;
-    private readonly questionService: QuestionService;
-    private readonly accessService: AccessService;
-
     constructor(
-        userRepository: Prisma.UserDelegate<undefined>,
-        quizRepository: Prisma.QuizDelegate<undefined>,
-        questionService: QuestionService,
-        accessService: AccessService,
-    ) {
-        this.userRepository = userRepository;
-        this.quizRepository = quizRepository;
-        this.questionService = questionService;
-        this.accessService = accessService;
-    }
+        private readonly userRepository: Prisma.UserDelegate<undefined>,
+        private readonly quizRepository: Prisma.QuizDelegate<undefined>,
+        private readonly questionService: QuestionService,
+        private readonly accessService: AccessService,
+    ) {}
 
     public async getAllViewableQuizzes(userId: number) {
         const allQuizzes = await this.quizRepository.findMany({

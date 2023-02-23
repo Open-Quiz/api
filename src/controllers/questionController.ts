@@ -18,13 +18,7 @@ import { QuestionService } from '../services/questionService';
 
 @Controller('/api/questions')
 export default class QuizQuestionController {
-    private readonly questionService: QuestionService;
-    private readonly accessService: AccessService;
-
-    constructor(questionService: QuestionService, accessService: AccessService) {
-        this.questionService = questionService;
-        this.accessService = accessService;
-    }
+    constructor(private readonly questionService: QuestionService, private readonly accessService: AccessService) {}
 
     @Delete()
     @Validate({ body: QuestionIdsModel })
