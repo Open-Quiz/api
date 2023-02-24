@@ -1,23 +1,15 @@
-import { Prisma } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
 import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
 import { CreateQuestion } from '../models/zod/questionModel';
-import questionService, { QuestionService } from './questionService';
-import accessService, { AccessService } from './accessService';
+import { QuestionService } from './questionService';
+import { AccessService } from './accessService';
 
-export class QuizService {
-    constructor(
-        private readonly userRepository: Prisma.UserDelegate<undefined>,
-        private readonly quizRepository: Prisma.QuizDelegate<undefined>,
-        private readonly questionService: QuestionService,
-        private readonly accessService: AccessService,
-    ) {}
-
-    public async getAllViewableQuizzes(userId: number) {
-        const allQuizzes = await this.quizRepository.findMany({
+export namespace QuizService {
+    export async function getAllViewableQuizzes(userId: number) {
+        const allQuizzes = await prisma.quiz.findMany({
             include: { questions: true },
             where: {
                 OR: [{ ownerId: userId }, { isPublic: true }, { sharedWithUserIds: { has: userId } }],
@@ -27,8 +19,8 @@ export class QuizService {
         return allQuizzes;
     }
 
-    public async getQuizById(quizId: number) {
-        const quiz = await this.quizRepository.findFirst({
+    export async function getQuizById(quizId: number) {
+        const quiz = await prisma.quiz.findFirst({
             where: {
                 id: quizId,
             },
@@ -42,22 +34,25 @@ export class QuizService {
         return quiz;
     }
 
-    public async getViewableQuizById(quizId: number, requesterId: number) {
-        const quiz = await this.getQuizById(quizId);
+    export async function getViewableQuizById(quizId: number, requesterId: number) {
+        const quiz = await getQuizById(quizId);
 
-        if (!this.accessService.canUserAccess(quiz, requesterId)) {
+        if (!AccessService.canUserAccess(quiz, requesterId)) {
             throw new ForbiddenError(`You do not have access to the quiz ${quizId}`);
         }
 
         return quiz;
     }
 
-    public async createQuiz({ questions = [], sharedWithUserIds = [], ...other }: CreateQuiz, ownerId: number) {
-        this.questionService.validateQuestions(questions);
+    export async function createQuiz(
+        { questions = [], sharedWithUserIds = [], ...other }: CreateQuiz,
+        ownerId: number,
+    ) {
+        QuestionService.validateQuestions(questions);
 
-        sharedWithUserIds = await this.validateSharedWithUserIds(sharedWithUserIds, ownerId);
+        sharedWithUserIds = await validateSharedWithUserIds(sharedWithUserIds, ownerId);
 
-        const newQuiz = await this.quizRepository.create({
+        const newQuiz = await prisma.quiz.create({
             data: {
                 ...other,
                 ownerId,
@@ -74,10 +69,10 @@ export class QuizService {
         return newQuiz;
     }
 
-    public async appendQuizQuestionsById(quizId: number, questions: CreateQuestion[]) {
-        this.questionService.validateQuestions(questions);
+    export async function appendQuizQuestionsById(quizId: number, questions: CreateQuestion[]) {
+        QuestionService.validateQuestions(questions);
 
-        return await this.quizRepository.update({
+        return await prisma.quiz.update({
             where: { id: quizId },
             data: {
                 questions: {
@@ -90,32 +85,29 @@ export class QuizService {
         });
     }
 
-    public async updateQuizById(quizId: number, requesterId: number, updateQuiz: UpdateQuiz) {
+    export async function updateQuizById(quizId: number, requesterId: number, updateQuiz: UpdateQuiz) {
         if (updateQuiz.sharedWithUserIds) {
-            updateQuiz.sharedWithUserIds = await this.validateSharedWithUserIds(
-                updateQuiz.sharedWithUserIds,
-                requesterId,
-            );
+            updateQuiz.sharedWithUserIds = await validateSharedWithUserIds(updateQuiz.sharedWithUserIds, requesterId);
         }
 
-        return await this.quizRepository.update({
+        return await prisma.quiz.update({
             where: { id: quizId },
             data: updateQuiz,
             include: { questions: true },
         });
     }
 
-    public async deleteQuizById(quizId: number) {
-        await this.quizRepository.delete({
+    export async function deleteQuizById(quizId: number) {
+        await prisma.quiz.delete({
             where: { id: quizId },
         });
     }
 
-    public async validateSharedWithUserIds(sharedWithUserIds: number[], requesterId: number) {
+    export async function validateSharedWithUserIds(sharedWithUserIds: number[], requesterId: number) {
         const distinctSharedWithUserIds = [...new Set(sharedWithUserIds.filter((userId) => userId !== requesterId))];
 
         const sharedWithUserIdsThatExist = (
-            await this.userRepository.findMany({
+            await prisma.user.findMany({
                 where: {
                     id: { in: distinctSharedWithUserIds },
                 },
@@ -135,6 +127,3 @@ export class QuizService {
         return distinctSharedWithUserIds;
     }
 }
-
-const singleton = new QuizService(prisma.user, prisma.quiz, questionService, accessService);
-export default singleton;

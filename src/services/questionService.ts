@@ -1,14 +1,12 @@
-import { Prisma, QuizQuestion } from '@prisma/client';
+import { QuizQuestion } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import NotFoundError from '../errors/notFoundError';
 import { CreateQuestion, UpdateQuestion, UpdateQuestionStats } from '../models/zod/questionModel';
 
-export class QuestionService {
-    constructor(private readonly questionRepository: Prisma.QuizQuestionDelegate<undefined>) {}
-
-    public async getQuestionWithQuizById(questionId: number) {
-        const question = await this.questionRepository.findFirst({
+export namespace QuestionService {
+    export async function getQuestionWithQuizById(questionId: number) {
+        const question = await prisma.quizQuestion.findFirst({
             where: { id: questionId },
             include: { quiz: true },
         });
@@ -20,8 +18,8 @@ export class QuestionService {
         return question;
     }
 
-    public async getQuestionsWithQuizById(questionIds: number[]) {
-        const questions = await this.questionRepository.findMany({
+    export async function getQuestionsWithQuizById(questionIds: number[]) {
+        const questions = await prisma.quizQuestion.findMany({
             where: {
                 id: { in: questionIds },
             },
@@ -37,19 +35,23 @@ export class QuestionService {
         return questions;
     }
 
-    public async updateQuestionById(currentQuestion: QuizQuestion, questionId: number, updateQuestion: UpdateQuestion) {
+    export async function updateQuestionById(
+        currentQuestion: QuizQuestion,
+        questionId: number,
+        updateQuestion: UpdateQuestion,
+    ) {
         const tempUpdatedQuestion = { ...currentQuestion, ...updateQuestion };
 
-        this.validateQuestion(tempUpdatedQuestion);
+        validateQuestion(tempUpdatedQuestion);
 
-        return await this.questionRepository.update({
+        return await prisma.quizQuestion.update({
             where: { id: questionId },
             data: updateQuestion,
         });
     }
 
-    public async updateQuestionStats(questionId: number, updateQuestionStats: UpdateQuestionStats) {
-        return await this.questionRepository.update({
+    export async function updateQuestionStats(questionId: number, updateQuestionStats: UpdateQuestionStats) {
+        return await prisma.quizQuestion.update({
             where: { id: questionId },
             data: {
                 totalCorrectAttempts: {
@@ -62,14 +64,14 @@ export class QuestionService {
         });
     }
 
-    public async deleteQuestion(questionId: number) {
-        await this.questionRepository.delete({
+    export async function deleteQuestion(questionId: number) {
+        await prisma.quizQuestion.delete({
             where: { id: questionId },
         });
     }
 
-    public async deleteQuestions(questionIds: number[]) {
-        const result = await this.questionRepository.deleteMany({
+    export async function deleteQuestions(questionIds: number[]) {
+        const result = await prisma.quizQuestion.deleteMany({
             where: {
                 id: {
                     in: questionIds,
@@ -80,7 +82,7 @@ export class QuestionService {
         return result.count;
     }
 
-    public validateQuestion(question: CreateQuestion) {
+    export function validateQuestion(question: CreateQuestion) {
         if (question.correctOption >= question.options.length) {
             throw new BadRequestError([
                 {
@@ -91,12 +93,9 @@ export class QuestionService {
         }
     }
 
-    public validateQuestions(questions: CreateQuestion[]) {
+    export function validateQuestions(questions: CreateQuestion[]) {
         for (const question of questions) {
-            this.validateQuestion(question);
+            validateQuestion(question);
         }
     }
 }
-
-const singleton = new QuestionService(prisma.quizQuestion);
-export default singleton;

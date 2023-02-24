@@ -1,5 +1,5 @@
 import { Quiz } from '@prisma/client';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AccessService } from './accessService';
 
 describe('@Unit - Access Service', () => {
@@ -8,15 +8,9 @@ describe('@Unit - Access Service', () => {
         title: 'Test Quiz',
     };
 
-    let accessService: AccessService;
-
-    beforeAll(() => {
-        accessService = new AccessService();
-    });
-
     describe('Can user access', async () => {
         it('allows any user to access a public quiz', async () => {
-            const canAccess = accessService.canUserAccess(
+            const canAccess = AccessService.canUserAccess(
                 {
                     ...mockQuiz,
                     isPublic: true,
@@ -30,7 +24,7 @@ describe('@Unit - Access Service', () => {
         });
 
         it('allows a user to access a quiz they are the owner of', async () => {
-            const canAccess = accessService.canUserAccess(
+            const canAccess = AccessService.canUserAccess(
                 {
                     ...mockQuiz,
                     isPublic: false,
@@ -44,7 +38,7 @@ describe('@Unit - Access Service', () => {
         });
 
         it('allows a user to access a quiz shared with them', async () => {
-            const canAccess = accessService.canUserAccess(
+            const canAccess = AccessService.canUserAccess(
                 {
                     ...mockQuiz,
                     isPublic: false,
@@ -58,7 +52,7 @@ describe('@Unit - Access Service', () => {
         });
 
         it("doesn't allow a user to access a quiz not public, they're not the owner of and one not shared with them", async () => {
-            const canAccess = accessService.canUserAccess(
+            const canAccess = AccessService.canUserAccess(
                 {
                     ...mockQuiz,
                     isPublic: false,
@@ -74,7 +68,7 @@ describe('@Unit - Access Service', () => {
 
     describe('Can user modify', async () => {
         it('allows a user to modify a quiz they are the owner of', async () => {
-            const canModify = accessService.canUserModify(
+            const canModify = AccessService.canUserModify(
                 {
                     ...mockQuiz,
                     isPublic: false,
@@ -88,7 +82,7 @@ describe('@Unit - Access Service', () => {
         });
 
         it("doesn't allow a user to modify a quiz they are not the owner of", async () => {
-            const canModify = accessService.canUserModify(
+            const canModify = AccessService.canUserModify(
                 {
                     ...mockQuiz,
                     isPublic: false,

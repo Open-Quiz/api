@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import prisma from '../client/instance';
 import quizDto, { QuizDto } from '../models/dtos/quizDto';
 import { QuestionIds, UpdateQuestion } from '../models/zod/questionModel';
-import tokenService from '../services/tokenService';
+import { TokenService } from '../services/tokenService';
 import { mockQuiz, mockQuizQuestion } from '../testing/mocks/mockQuiz';
 import { mockUser } from '../testing/mocks/mockUser';
 import request from '../testing/request';
@@ -25,8 +25,8 @@ describe('@Integration - Question Controller', async () => {
         user1 = await prisma.user.create({ data: mockUser });
         user2 = await prisma.user.create({ data: mockUser });
 
-        user1AccessToken = `Bearer ${await tokenService.signAccessToken(user1.id)}`;
-        user2AccessToken = `Bearer ${await tokenService.signAccessToken(user2.id)}`;
+        user1AccessToken = `Bearer ${await TokenService.signAccessToken(user1.id)}`;
+        user2AccessToken = `Bearer ${await TokenService.signAccessToken(user2.id)}`;
 
         quiz = quizDto(
             await prisma.quiz.create({

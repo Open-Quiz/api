@@ -2,21 +2,21 @@ import * as jose from 'jose';
 import config from '../config';
 import { TokenType } from '../types/enums/TokenType';
 
-export class TokenService {
-    public async verifyToken(token: string, tokenType: TokenType) {
+export namespace TokenService {
+    export async function verifyToken(token: string, tokenType: TokenType) {
         const { payload } = await jose.jwtVerify(token, config.jwt.secret, { audience: tokenType });
         return payload;
     }
 
-    public async signAccessToken(userId: number) {
-        return this.signToken(userId, TokenType.Access);
+    export async function signAccessToken(userId: number) {
+        return signToken(userId, TokenType.Access);
     }
 
-    public async signRefreshToken(userId: number) {
-        return this.signToken(userId, TokenType.Refresh);
+    export async function signRefreshToken(userId: number) {
+        return signToken(userId, TokenType.Refresh);
     }
 
-    private async signToken(userId: number, tokenType: TokenType) {
+    async function signToken(userId: number, tokenType: TokenType) {
         return await new jose.SignJWT({})
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
@@ -26,6 +26,3 @@ export class TokenService {
             .sign(config.jwt.secret);
     }
 }
-
-const singleton = new TokenService();
-export default singleton;

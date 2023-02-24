@@ -4,6 +4,7 @@
     "description": "The open quiz api",
     "main": "index.js",
     "scripts": {
+        "build": "dotenv -e .env.development -- tsc",
         "dev": "dotenv -e .env.development -- nodemon src/index.ts --devmode",
         "start": "node .",
         "prisma:push": "dotenv -e .env.development yarn prisma db push",
