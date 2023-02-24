@@ -11,7 +11,7 @@ setupTestApp();
 
 describe('@Integration - Authentication Handler', () => {
     it('returns unauthorized request if there is no authorization header', async () => {
-        const res = await request.get('/api/quizzes');
+        const res = await request.get('/api/v1/quizzes');
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -20,7 +20,7 @@ describe('@Integration - Authentication Handler', () => {
     });
 
     it("returns unauthorized request if the authorization header doesn't start with 'Bearer '", async () => {
-        const res = await request.get('/api/quizzes').set('authorization', 'test');
+        const res = await request.get('/api/v1/quizzes').set('authorization', 'test');
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -31,7 +31,7 @@ describe('@Integration - Authentication Handler', () => {
     it('returns unauthorized request if the token is not an access token', async () => {
         const token = await TokenService.signRefreshToken(1);
 
-        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/v1/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -47,7 +47,7 @@ describe('@Integration - Authentication Handler', () => {
             .setExpirationTime(config.jwt.expiresIn.access)
             .sign(config.jwt.secret);
 
-        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/v1/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -64,7 +64,7 @@ describe('@Integration - Authentication Handler', () => {
             .setExpirationTime(config.jwt.expiresIn.access)
             .sign(config.jwt.secret);
 
-        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/v1/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -75,7 +75,7 @@ describe('@Integration - Authentication Handler', () => {
     it('returns unauthorized request if there is no user associated with the token', async () => {
         const token = await TokenService.signAccessToken(1);
 
-        const res = await request.get('/api/quizzes').set('authorization', `Bearer ${token}`);
+        const res = await request.get('/api/v1/quizzes').set('authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({
@@ -84,7 +84,7 @@ describe('@Integration - Authentication Handler', () => {
     });
 
     it('returns unauthorized request if the access token is malformed', async () => {
-        const res = await request.get('/api/quizzes').set('authorization', 'Bearer test');
+        const res = await request.get('/api/v1/quizzes').set('authorization', 'Bearer test');
 
         expect(res.statusCode).toBe(401);
         expect(res.body).toStrictEqual<ErrorResponse>({

@@ -9,7 +9,7 @@ import { QuizService } from '../services/quizService';
 import { CreateQuiz, CreateQuizModel, UpdateQuiz, UpdateQuizModel } from '../models/zod/quizModel';
 import { AccessService } from '../services/accessService';
 
-@Controller('/api/quizzes')
+@Controller('/quizzes')
 export default class QuizController {
     @Get()
     public async getAllQuizzes(req: Request, res: Response) {

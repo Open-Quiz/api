@@ -74,39 +74,39 @@ describe('@Integration - Quiz Controller', async () => {
         );
     });
 
-    describe('GET /api/quizzes', async () => {
+    describe('GET /api/v1/quizzes', async () => {
         it('returns the 2 quizzes which the user created', async () => {
-            const res = await request.get('/api/quizzes').set('authorization', user1AccessToken);
+            const res = await request.get('/api/v1/quizzes').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto[]>([quiz1, quiz2]);
         });
 
         it('returns the public quiz created by the other user', async () => {
-            const res = await request.get('/api/quizzes').set('authorization', user2AccessToken);
+            const res = await request.get('/api/v1/quizzes').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto[]>([quiz2]);
         });
 
         it('returns the quizzes shared with the user and public quizzes', async () => {
-            const res = await request.get('/api/quizzes').set('authorization', user3AccessToken);
+            const res = await request.get('/api/v1/quizzes').set('authorization', user3AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto[]>([quiz1, quiz2]);
         });
     });
 
-    describe('GET /api/quizzes/:id', () => {
+    describe('GET /api/v1/quizzes/:id', () => {
         it('returns the quiz with the specified id if it exists', async () => {
-            const res = await request.get('/api/quizzes/1').set('authorization', user1AccessToken);
+            const res = await request.get('/api/v1/quizzes/1').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto>(quiz1);
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const res = await request.get('/api/quizzes/3').set('authorization', user1AccessToken);
+            const res = await request.get('/api/v1/quizzes/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -115,7 +115,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a forbidden response if you dont have access to the quiz', async () => {
-            const res = await request.get('/api/quizzes/1').set('authorization', user2AccessToken);
+            const res = await request.get('/api/v1/quizzes/1').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -124,27 +124,27 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns the quiz with the specified id if it is public', async () => {
-            const res = await request.get('/api/quizzes/2').set('authorization', user2AccessToken);
+            const res = await request.get('/api/v1/quizzes/2').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto>(quiz2);
         });
 
         it('returns the quiz with the specified id if it is shared with the user', async () => {
-            const res = await request.get('/api/quizzes/1').set('authorization', user3AccessToken);
+            const res = await request.get('/api/v1/quizzes/1').set('authorization', user3AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizDto>(quiz1);
         });
     });
 
-    describe('PATCH /api/quizzes/:id', async () => {
+    describe('PATCH /api/v1/quizzes/:id', async () => {
         it('updates the quiz title and returns the updated quiz', async () => {
             const patchQuiz: UpdateQuiz = {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request.patch('/api/quizzes/2').send(patchQuiz).set('authorization', user1AccessToken);
+            const res = await request.patch('/api/v1/quizzes/2').send(patchQuiz).set('authorization', user1AccessToken);
 
             const expected = { ...quiz2, ...patchQuiz };
 
@@ -159,7 +159,7 @@ describe('@Integration - Quiz Controller', async () => {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request.patch('/api/quizzes/3').send(patchQuiz).set('authorization', user1AccessToken);
+            const res = await request.patch('/api/v1/quizzes/3').send(patchQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -172,7 +172,7 @@ describe('@Integration - Quiz Controller', async () => {
                 title: 'Updated Quiz Title',
             };
 
-            const res = await request.patch('/api/quizzes/1').send(patchQuiz).set('authorization', user2AccessToken);
+            const res = await request.patch('/api/v1/quizzes/1').send(patchQuiz).set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -185,7 +185,7 @@ describe('@Integration - Quiz Controller', async () => {
                 sharedWithUserIds: [4, 5],
             };
 
-            const res = await request.patch('/api/quizzes/1').send(patchQuiz).set('authorization', user1AccessToken);
+            const res = await request.patch('/api/v1/quizzes/1').send(patchQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -194,13 +194,13 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('POST /api/quizzes', async () => {
+    describe('POST /api/v1/quizzes', async () => {
         it('should create 1 quiz and 3 quiz questions', async () => {
             const createQuiz: CreateQuiz = {
                 ...mockQuiz,
                 questions: [mockQuizQuestion, mockQuizQuestion, mockQuizQuestion],
             };
-            const res = await request.post('/api/quizzes').send(createQuiz).set('authorization', user1AccessToken);
+            const res = await request.post('/api/v1/quizzes').send(createQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<QuizDto>({
@@ -232,7 +232,7 @@ describe('@Integration - Quiz Controller', async () => {
                 questions: [],
             };
 
-            const res = await request.post('/api/quizzes').send(createQuiz).set('authorization', user1AccessToken);
+            const res = await request.post('/api/v1/quizzes').send(createQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toStrictEqual<QuizDto>({
@@ -251,7 +251,7 @@ describe('@Integration - Quiz Controller', async () => {
                 questions: [],
             };
 
-            const res = await request.post('/api/quizzes').send(createQuiz).set('authorization', user1AccessToken);
+            const res = await request.post('/api/v1/quizzes').send(createQuiz).set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(400);
             expect(res.body).toStrictEqual<BadRequestResponse>({
@@ -260,9 +260,9 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('DELETE /api/quizzes/:id', () => {
+    describe('DELETE /api/v1/quizzes/:id', () => {
         it('deletes the quiz when it exists', async () => {
-            const res = await request.delete('/api/quizzes/3').set('authorization', user1AccessToken);
+            const res = await request.delete('/api/v1/quizzes/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(204);
             expect(res.body).toStrictEqual({});
@@ -275,7 +275,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a not found response when there is no quiz with the id', async () => {
-            const res = await request.delete('/api/quizzes/3').set('authorization', user1AccessToken);
+            const res = await request.delete('/api/v1/quizzes/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -284,7 +284,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
 
         it('returns a forbidden response if you are not the owner of the quiz', async () => {
-            const res = await request.delete('/api/quizzes/1').set('authorization', user2AccessToken);
+            const res = await request.delete('/api/v1/quizzes/1').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -293,14 +293,14 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('PATCH /api/quizzes/:id/questions', async () => {
+    describe('PATCH /api/v1/quizzes/:id/questions', async () => {
         const questions: AppendQuestions = {
             questions: [mockQuizQuestion, mockQuizQuestion],
         };
 
         it('appends the questions to the quiz', async () => {
             const res = await request
-                .patch('/api/quizzes/2/questions')
+                .patch('/api/v1/quizzes/2/questions')
                 .send(questions)
                 .set('authorization', user1AccessToken);
 
@@ -327,7 +327,7 @@ describe('@Integration - Quiz Controller', async () => {
 
         it('returns a not found response when there is no quiz with the id', async () => {
             const res = await request
-                .patch('/api/quizzes/3/questions')
+                .patch('/api/v1/quizzes/3/questions')
                 .send(questions)
                 .set('authorization', user1AccessToken);
 
@@ -339,7 +339,7 @@ describe('@Integration - Quiz Controller', async () => {
 
         it('returns a forbidden response if you are not the owner of the quiz', async () => {
             const res = await request
-                .patch('/api/quizzes/2/questions')
+                .patch('/api/v1/quizzes/2/questions')
                 .send(questions)
                 .set('authorization', user2AccessToken);
 
@@ -355,7 +355,7 @@ describe('@Integration - Quiz Controller', async () => {
             };
 
             const res = await request
-                .patch('/api/quizzes/2/questions')
+                .patch('/api/v1/quizzes/2/questions')
                 .send(questions)
                 .set('authorization', user1AccessToken);
 

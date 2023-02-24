@@ -16,7 +16,7 @@ import {
 import { AccessService } from '../services/accessService';
 import { QuestionService } from '../services/questionService';
 
-@Controller('/api/questions')
+@Controller('/questions')
 export default class QuizQuestionController {
     @Delete()
     @Validate({ body: QuestionIdsModel })

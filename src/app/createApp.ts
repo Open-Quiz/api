@@ -8,7 +8,7 @@ import QuizController from '../controllers/quizController';
 import QuizQuestionController from '../controllers/questionController';
 import authenticationHandler from '../middleware/authenticationHandler';
 import errorHandler from '../middleware/errorHandler';
-import { useRoutes } from '../routes/meta/useRoutes';
+import { useRoutes } from '../routes/useRoutes';
 
 export default function createApp() {
     const app = express();
@@ -17,7 +17,10 @@ export default function createApp() {
     app.use(express.urlencoded({ extended: false }));
     app.use(authenticationHandler);
 
-    useRoutes(app, new QuizQuestionController(), new QuizController());
+    useRoutes(app, {
+        baseRoute: '/api/v1',
+        controllers: [new QuizQuestionController(), new QuizController()],
+    });
 
     app.use(errorHandler);
 

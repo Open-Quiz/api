@@ -1,11 +1,16 @@
 import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
-import { getControllerMeta } from '../../decorators/controller';
-import { getRouteMeta, RouteMeta } from '../../decorators/route';
-import { catchErrorWrapper } from '../../middleware/errorHandler';
-import { Method } from '../../types/enums/Method';
+import { getControllerMeta } from '../decorators/controller';
+import { getRouteMeta, RouteMeta } from '../decorators/route';
+import { catchErrorWrapper } from '../middleware/errorHandler';
+import { Method } from '../types/enums/Method';
 
 type Routes = (RouteMeta & { handler: RequestHandler })[];
+
+interface UseRouteOptions {
+    baseRoute?: string;
+    controllers: Object[];
+}
 
 function isRequestHandler(handler: any): handler is RequestHandler {
     return typeof handler === 'function'; // && hasRouteMeta(handler);
@@ -57,8 +62,9 @@ function generateRoutes(controller: object): Routes {
     return routes;
 }
 
-export function useRoutes(app: Express, ...controllers: Object[]) {
-    for (const controller of controllers) {
+export function useRoutes(app: Express, options: UseRouteOptions) {
+    const baseRoute = options.baseRoute ?? '';
+    for (const controller of options.controllers) {
         const controllerMeta = getControllerMeta(controller.constructor);
         if (!controllerMeta) {
             return;
@@ -67,6 +73,6 @@ export function useRoutes(app: Express, ...controllers: Object[]) {
         const routes = generateRoutes(controller);
         const router = generateRouter(routes);
 
-        app.use(controllerMeta.route, router);
+        app.use(baseRoute + controllerMeta.route, router);
     }
 }

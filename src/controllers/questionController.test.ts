@@ -45,9 +45,9 @@ describe('@Integration - Question Controller', async () => {
         );
     });
 
-    describe('GET /api/questions/:id', async () => {
+    describe('GET /api/v1/questions/:id', async () => {
         it('returns the question with the specified id if it exists', async () => {
-            const res = await request.get('/api/questions/1').set('authorization', user1AccessToken);
+            const res = await request.get('/api/v1/questions/1').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual<QuizQuestion>({
@@ -58,7 +58,7 @@ describe('@Integration - Question Controller', async () => {
         });
 
         it('returns a not found response when there is no question with the id', async () => {
-            const res = await request.get('/api/questions/5').set('authorization', user1AccessToken);
+            const res = await request.get('/api/v1/questions/5').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -67,7 +67,7 @@ describe('@Integration - Question Controller', async () => {
         });
 
         it('returns a forbidden response if you cant access the quiz question', async () => {
-            const res = await request.get('/api/questions/1').set('authorization', user2AccessToken);
+            const res = await request.get('/api/v1/questions/1').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -76,14 +76,14 @@ describe('@Integration - Question Controller', async () => {
         });
     });
 
-    describe('PATCH /api/questions/:id', async () => {
+    describe('PATCH /api/v1/questions/:id', async () => {
         const updateQuestion: UpdateQuestion = {
             options: ['Updated option A', 'Updated option B'],
         };
 
         it('updates the question options and returns the updated question', async () => {
             const res = await request
-                .patch('/api/questions/1')
+                .patch('/api/v1/questions/1')
                 .send(updateQuestion)
                 .set('authorization', user1AccessToken);
 
@@ -103,7 +103,7 @@ describe('@Integration - Question Controller', async () => {
 
         it('returns a not found response if there is no quiz question with the id', async () => {
             const res = await request
-                .patch('/api/questions/5')
+                .patch('/api/v1/questions/5')
                 .send(updateQuestion)
                 .set('authorization', user1AccessToken);
 
@@ -115,7 +115,7 @@ describe('@Integration - Question Controller', async () => {
 
         it('returns a forbidden response if you cant modify the quiz question', async () => {
             const res = await request
-                .patch('/api/questions/1')
+                .patch('/api/v1/questions/1')
                 .send(updateQuestion)
                 .set('authorization', user2AccessToken);
 
@@ -131,7 +131,7 @@ describe('@Integration - Question Controller', async () => {
             };
 
             const res = await request
-                .patch('/api/questions/1')
+                .patch('/api/v1/questions/1')
                 .send(updateQuestion)
                 .set('authorization', user1AccessToken);
 
@@ -142,16 +142,16 @@ describe('@Integration - Question Controller', async () => {
         });
     });
 
-    describe('DELETE /api/questions/:id', async () => {
+    describe('DELETE /api/v1/questions/:id', async () => {
         it('deletes the quiz question specified', async () => {
-            const res = await request.delete('/api/questions/3').set('authorization', user1AccessToken);
+            const res = await request.delete('/api/v1/questions/3').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(204);
             expect(res.body).toStrictEqual({});
         });
 
         it('returns a not found response when there is no question with the id', async () => {
-            const res = await request.delete('/api/questions/5').set('authorization', user1AccessToken);
+            const res = await request.delete('/api/v1/questions/5').set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -160,7 +160,7 @@ describe('@Integration - Question Controller', async () => {
         });
 
         it('returns a forbidden response if you cant modify a quiz question', async () => {
-            const res = await request.delete('/api/questions/1').set('authorization', user2AccessToken);
+            const res = await request.delete('/api/v1/questions/1').set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -169,13 +169,16 @@ describe('@Integration - Question Controller', async () => {
         });
     });
 
-    describe('DELETE /api/questions', async () => {
+    describe('DELETE /api/v1/questions', async () => {
         it('deletes the quiz questions specified', async () => {
             const questions: QuestionIds = {
                 questionIds: [1, 2],
             };
 
-            const res = await request.delete('/api/questions').send(questions).set('authorization', user1AccessToken);
+            const res = await request
+                .delete('/api/v1/questions')
+                .send(questions)
+                .set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(200);
             expect(res.body).toStrictEqual({ deletedCount: 2 });
@@ -186,7 +189,10 @@ describe('@Integration - Question Controller', async () => {
                 questionIds: [1, 2],
             };
 
-            const res = await request.delete('/api/questions').send(questions).set('authorization', user1AccessToken);
+            const res = await request
+                .delete('/api/v1/questions')
+                .send(questions)
+                .set('authorization', user1AccessToken);
 
             expect(res.statusCode).toBe(404);
             expect(res.body).toStrictEqual<ErrorResponse>({
@@ -199,7 +205,10 @@ describe('@Integration - Question Controller', async () => {
                 questionIds: [4],
             };
 
-            const res = await request.delete('/api/questions').send(questions).set('authorization', user2AccessToken);
+            const res = await request
+                .delete('/api/v1/questions')
+                .send(questions)
+                .set('authorization', user2AccessToken);
 
             expect(res.statusCode).toBe(403);
             expect(res.body).toStrictEqual<ErrorResponse>({
