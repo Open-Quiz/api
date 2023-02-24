@@ -45,7 +45,7 @@ describe('@Integration - Question Controller', async () => {
         );
     });
 
-    describe('GET /api/v1/questions/:id', async () => {
+    describe('GET /api/v1/questions/:questionId', async () => {
         it('returns the question with the specified id if it exists', async () => {
             const res = await request.get('/api/v1/questions/1').set('authorization', user1AccessToken);
 
@@ -76,7 +76,7 @@ describe('@Integration - Question Controller', async () => {
         });
     });
 
-    describe('PATCH /api/v1/questions/:id', async () => {
+    describe('PATCH /api/v1/questions/:questionId', async () => {
         const updateQuestion: UpdateQuestion = {
             options: ['Updated option A', 'Updated option B'],
         };
@@ -142,7 +142,7 @@ describe('@Integration - Question Controller', async () => {
         });
     });
 
-    describe('DELETE /api/v1/questions/:id', async () => {
+    describe('DELETE /api/v1/questions/:questionId', async () => {
         it('deletes the quiz question specified', async () => {
             const res = await request.delete('/api/v1/questions/3').set('authorization', user1AccessToken);
 

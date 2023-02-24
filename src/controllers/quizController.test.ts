@@ -97,7 +97,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('GET /api/v1/quizzes/:id', () => {
+    describe('GET /api/v1/quizzes/:quizId', () => {
         it('returns the quiz with the specified id if it exists', async () => {
             const res = await request.get('/api/v1/quizzes/1').set('authorization', user1AccessToken);
 
@@ -138,7 +138,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('PATCH /api/v1/quizzes/:id', async () => {
+    describe('PATCH /api/v1/quizzes/:quizId', async () => {
         it('updates the quiz title and returns the updated quiz', async () => {
             const patchQuiz: UpdateQuiz = {
                 title: 'Updated Quiz Title',
@@ -260,7 +260,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('DELETE /api/v1/quizzes/:id', () => {
+    describe('DELETE /api/v1/quizzes/:quizId', () => {
         it('deletes the quiz when it exists', async () => {
             const res = await request.delete('/api/v1/quizzes/3').set('authorization', user1AccessToken);
 
@@ -293,7 +293,7 @@ describe('@Integration - Quiz Controller', async () => {
         });
     });
 
-    describe('PATCH /api/v1/quizzes/:id/questions', async () => {
+    describe('PATCH /api/v1/quizzes/:quizId/questions', async () => {
         const questions: AppendQuestions = {
             questions: [mockQuizQuestion, mockQuizQuestion],
         };

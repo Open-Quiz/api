@@ -4,7 +4,7 @@ import { Delete, Get, Patch } from '../decorators/route';
 import Validate from '../decorators/validate';
 import ForbiddenError from '../errors/forbiddenError';
 import questionDto from '../models/dtos/questionDto';
-import { IdModel, IdParam } from '../models/zod/idModel';
+import { QuestionId, QuestionIdModel } from '../models/zod/idModel';
 import {
     QuestionIds,
     QuestionIdsModel,
@@ -36,36 +36,36 @@ export default class QuizQuestionController {
         res.ok({ deletedCount });
     }
 
-    @Get('/:id')
-    @Validate({ param: IdModel })
-    public async getQuestionById(req: Request<IdParam>, res: Response) {
-        const question = await QuestionService.getQuestionWithQuizById(req.params.id);
+    @Get('/:questionId')
+    @Validate({ param: QuestionIdModel })
+    public async getQuestionById(req: Request<QuestionId>, res: Response) {
+        const question = await QuestionService.getQuestionWithQuizById(req.params.questionId);
 
         if (!AccessService.canUserAccess(question.quiz, req.requester.id)) {
-            throw new ForbiddenError(`You do not have access to the quiz question ${req.params.id}`);
+            throw new ForbiddenError(`You do not have access to the quiz question ${req.params.questionId}`);
         }
 
         res.ok(questionDto(question));
     }
 
-    @Patch('/:id')
-    @Validate({ param: IdModel, body: UpdateQuestionModel })
-    public async updateQuestionById(req: Request<IdParam, unknown, UpdateQuestion>, res: Response) {
-        const question = await QuestionService.getQuestionWithQuizById(req.params.id);
+    @Patch('/:questionId')
+    @Validate({ param: QuestionIdModel, body: UpdateQuestionModel })
+    public async updateQuestionById(req: Request<QuestionId, unknown, UpdateQuestion>, res: Response) {
+        const question = await QuestionService.getQuestionWithQuizById(req.params.questionId);
 
         if (!AccessService.canUserModify(question.quiz, req.requester.id)) {
             return res.forbidden('Only the owner can update a quiz question');
         }
 
-        const updatedQuestion = await QuestionService.updateQuestionById(question, req.params.id, req.body);
+        const updatedQuestion = await QuestionService.updateQuestionById(question, req.params.questionId, req.body);
 
         res.ok(updatedQuestion);
     }
 
-    @Delete('/:id')
-    @Validate({ param: IdModel })
-    public async deleteQuizQuestion(req: Request<IdParam>, res: Response) {
-        const question = await QuestionService.getQuestionWithQuizById(req.params.id);
+    @Delete('/:questionId')
+    @Validate({ param: QuestionIdModel })
+    public async deleteQuizQuestion(req: Request<QuestionId>, res: Response) {
+        const question = await QuestionService.getQuestionWithQuizById(req.params.questionId);
 
         if (!AccessService.canUserModify(question.quiz, req.requester.id)) {
             return res.forbidden('Only the owner can delete a quiz question');
@@ -75,16 +75,16 @@ export default class QuizQuestionController {
         res.noContent();
     }
 
-    @Patch('/:id/stats')
-    @Validate({ param: IdModel, body: UpdateQuestionStatsModel })
-    public async updateQuestionStats(req: Request<IdParam, unknown, UpdateQuestionStats>, res: Response) {
-        const question = await QuestionService.getQuestionWithQuizById(req.params.id);
+    @Patch('/:questionId/stats')
+    @Validate({ param: QuestionIdModel, body: UpdateQuestionStatsModel })
+    public async updateQuestionStats(req: Request<QuestionId, unknown, UpdateQuestionStats>, res: Response) {
+        const question = await QuestionService.getQuestionWithQuizById(req.params.questionId);
 
         if (!AccessService.canUserAccess(question.quiz, req.requester.id)) {
-            return res.forbidden(`You do not have access to the quiz question ${req.params.id}`);
+            return res.forbidden(`You do not have access to the quiz question ${req.params.questionId}`);
         }
 
-        const updatedQuestion = await QuestionService.updateQuestionStats(req.params.id, req.body);
+        const updatedQuestion = await QuestionService.updateQuestionStats(req.params.questionId, req.body);
 
         res.ok(updatedQuestion);
     }
