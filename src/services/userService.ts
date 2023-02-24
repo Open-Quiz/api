@@ -46,8 +46,13 @@ export namespace UserService {
         });
 
         if (!userProvider) {
+            // If there isn't a user provider already, then this is the first
+            // time they've logged in so we need to create a new user for them.
             const user = await prisma.user.create({
-                data: { isBot: false },
+                data: {
+                    isBot: false,
+                    mainProvider: provider,
+                },
             });
 
             await prisma.userProvider.create({
