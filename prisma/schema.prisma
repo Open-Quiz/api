@@ -12,10 +12,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserProvider {
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id]) 
+  provider   Provider
+  providerId String
+
+  @@unique([userId, provider])
+}
+
 model User {
   id      Int     @id @default(autoincrement())
   isBot   Boolean @default(false)
   quizzes Quiz[]
+  providers UserProvider[]
 }
 
 model Quiz {
@@ -37,4 +47,8 @@ model QuizQuestion {
   totalIncorrectAttempts Int      @default(0)
   quizId                 Int
   quiz                   Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+enum Provider {
+  Google
 }

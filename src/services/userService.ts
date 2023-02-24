@@ -1,23 +1,19 @@
+import { Provider } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 import config from '../config';
 import BadRequestError from '../errors/badRequestError';
 
 export namespace UserService {
     const googleClient = new OAuth2Client(config.google.clientId);
-    const supportedProviders = ['google'];
 
     export async function login(provider: string, token: string) {
-        provider = provider.toLocaleLowerCase();
-
-        if (supportedProviders.indexOf(provider) === -1) {
-            throw new BadRequestError([
-                { path: 'authorization.provider', message: `The login provider ${provider} is not supporter` },
-            ]);
-        }
-
         switch (provider) {
-            case 'google':
+            case Provider.Google:
                 return await loginWithGoogle(token);
+            default:
+                throw new BadRequestError([
+                    { path: 'authorization.provider', message: `The login provider ${provider} is not supporter` },
+                ]);
         }
     }
 
