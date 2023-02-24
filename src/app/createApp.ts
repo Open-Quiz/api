@@ -1,26 +1,31 @@
-import express from 'express';
-import authenticationHandler from '../middleware/authenticationHandler';
-import ErrorHandler from '../middleware/errorHandler';
-import { quizQuestionRoutes, quizRoutes } from '../routes';
-
 // Apply module augmentation
-import '../types/expressAugmentation';
+import '../types/augmentation/expressAugmentation';
+import 'reflect-metadata';
+
+import express from 'express';
+import config from '../config';
+import QuizController from '../controllers/quizController';
+import QuizQuestionController from '../controllers/questionController';
+import authenticationHandler from '../middleware/authenticationHandler';
+import errorHandler from '../middleware/errorHandler';
+import { useRoutes } from '../routes/useRoutes';
 
 export default function createApp() {
-    const port = Number(process.env.PORT) || 8000;
     const app = express();
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
     app.use(authenticationHandler);
 
-    app.use('/api/quizzes/questions', quizQuestionRoutes);
-    app.use('/api/quizzes', quizRoutes);
+    useRoutes(app, {
+        baseRoute: '/api/v1',
+        controllers: [new QuizQuestionController(), new QuizController()],
+    });
 
-    app.use(ErrorHandler);
+    app.use(errorHandler);
 
-    const server = app.listen(port, () => {
-        console.log(`⚡[server]: Server is running on port ${port}`);
+    const server = app.listen(config.api.port, () => {
+        console.log(`⚡[server]: Server is running on port ${config.api.port}`);
     });
 
     return { app, server };

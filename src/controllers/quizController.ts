@@ -1,137 +1,75 @@
-import { NextFunction, Request, Response } from 'express';
-import prisma from '../client/instance';
+import { Request, Response } from 'express';
+import Controller from '../decorators/controller';
+import { Delete, Get, Patch, Post } from '../decorators/route';
+import Validate from '../decorators/validate';
 import quizDto from '../models/dtos/quizDto';
-import { CompleteCreateQuiz } from '../models/zod/quizModel';
-import { QuizQuestionService } from '../services/quizQuestionService';
+import { AppendQuestions, AppendQuestionsModel } from '../models/zod/questionModel';
+import { QuizIdModel, QuizId } from '../models/zod/idModel';
 import { QuizService } from '../services/quizService';
-import IdParam from '../types/idParam';
-import { isNotUndefined } from '../utils/typing';
-import { PatchQuiz } from '../zod';
+import { CreateQuiz, CreateQuizModel, UpdateQuiz, UpdateQuizModel } from '../models/zod/quizModel';
+import { AccessService } from '../services/accessService';
 
-export async function getAllQuizzes(req: Request, res: Response) {
-    const allQuizzes = await prisma.quiz.findMany({
-        include: { questions: true },
-        where: QuizService.whereUserCanAccess(req.requester.id),
-    });
-
-    const quizDtos = allQuizzes.map(quizDto);
-    return res.ok(quizDtos);
-}
-
-export async function getQuiz(req: Request<IdParam>, res: Response) {
-    const quiz = await prisma.quiz.findFirst({
-        where: {
-            id: req.params.id,
-        },
-        include: { questions: true },
-    });
-
-    if (!quiz) {
-        return res.notFound(`There is no quiz with the id ${req.params.id}`);
+@Controller('/quizzes')
+export default class QuizController {
+    @Get()
+    public async getAllQuizzes(req: Request, res: Response) {
+        const allQuizzes = await QuizService.getAllViewableQuizzes(req.requester.id);
+        res.ok(allQuizzes.map(quizDto));
     }
 
-    if (!QuizService.canUserAccess(quiz, req.requester.id)) {
-        return res.forbidden(`You do not have access to the quiz ${quiz.id}`);
+    @Post()
+    @Validate({ body: CreateQuizModel })
+    public async createQuiz(req: Request<unknown, unknown, CreateQuiz>, res: Response) {
+        const newQuiz = await QuizService.createQuiz(req.body, req.requester.id);
+        res.created(quizDto(newQuiz));
     }
 
-    return res.ok(quizDto(quiz));
-}
-
-export async function createQuiz(
-    req: Request<unknown, unknown, CompleteCreateQuiz>,
-    res: Response,
-    next: NextFunction,
-) {
-    const { title, isPublic, questions = [], sharedWithUserIds = [] } = req.body;
-
-    const errors = questions
-        .map(QuizQuestionService.isInvalid)
-        .map((error, index) => (error ? { ...error, path: `questions.${index}.${error.path}` } : undefined))
-        .filter(isNotUndefined);
-
-    if (errors.length !== 0) {
-        return res.badRequest(errors);
+    @Get('/:quizId')
+    @Validate({ param: QuizIdModel })
+    public async getQuizById(req: Request<QuizId>, res: Response) {
+        const quiz = await QuizService.getViewableQuizById(req.params.quizId, req.requester.id);
+        res.ok(quizDto(quiz));
     }
 
-    try {
-        const distinctSharedWithUserIds = await QuizService.validateSharedWithUserIds(
-            sharedWithUserIds,
-            req.requester.id,
-        );
+    @Patch('/:quizId')
+    @Validate({ param: QuizIdModel, body: UpdateQuizModel })
+    public async updateQuizById(req: Request<QuizId, undefined, UpdateQuiz>, res: Response) {
+        const quiz = await QuizService.getQuizById(req.params.quizId);
 
-        const newQuiz = await prisma.quiz.create({
-            data: {
-                ownerId: req.requester.id,
-                title,
-                isPublic,
-                sharedWithUserIds: distinctSharedWithUserIds,
-                questions: {
-                    createMany: {
-                        data: questions,
-                    },
-                },
-            },
-            include: { questions: true },
-        });
-
-        const newQuizDto = quizDto(newQuiz);
-        return res.created(newQuizDto);
-    } catch (err) {
-        next(err);
-    }
-}
-
-export async function updateQuiz(req: Request<IdParam, undefined, PatchQuiz>, res: Response, next: NextFunction) {
-    const quizPatch = req.body;
-    const quiz = await prisma.quiz.findFirst({
-        where: { id: req.params.id },
-    });
-
-    if (!quiz) {
-        return res.notFound(`There is no quiz with the id ${req.params.id}`);
-    }
-
-    if (quiz.ownerId !== req.requester.id) {
-        return res.forbidden('Only the owner can update a quiz');
-    }
-
-    try {
-        if (quizPatch.sharedWithUserIds) {
-            quizPatch.sharedWithUserIds = await QuizService.validateSharedWithUserIds(
-                quizPatch.sharedWithUserIds,
-                req.requester.id,
-            );
+        if (!AccessService.canUserModify(quiz, req.requester.id)) {
+            return res.forbidden('Only the owner can update a quiz');
         }
 
-        const updatedQuiz = await prisma.quiz.update({
-            where: { id: req.params.id },
-            data: quizPatch,
-            include: { questions: true },
-        });
+        const updatedQuiz = await QuizService.updateQuizById(req.params.quizId, req.requester.id, req.body);
 
-        const updatedQuizDto = quizDto(updatedQuiz);
-        res.ok(updatedQuizDto);
-    } catch (err) {
-        next(err);
-    }
-}
-
-export async function deleteQuiz(req: Request<IdParam>, res: Response) {
-    const quiz = await prisma.quiz.findFirst({
-        where: { id: req.params.id },
-    });
-
-    if (!quiz) {
-        return res.notFound(`There is no quiz with the id ${req.params.id}`);
+        res.ok(quizDto(updatedQuiz));
     }
 
-    if (quiz.ownerId !== req.requester.id) {
-        return res.forbidden('Only the owner can delete a quiz');
+    @Delete('/:quizId')
+    @Validate({ param: QuizIdModel })
+    public async deleteQuizById(req: Request<QuizId>, res: Response) {
+        const quiz = await QuizService.getQuizById(req.params.quizId);
+
+        if (!AccessService.canUserModify(quiz, req.requester.id)) {
+            return res.forbidden('Only the owner can delete a quiz');
+        }
+
+        await QuizService.deleteQuizById(req.params.quizId);
+
+        res.noContent();
     }
 
-    await prisma.quiz.delete({
-        where: { id: req.params.id },
-    });
+    @Patch('/:quizId/questions')
+    @Validate({ param: QuizIdModel, body: AppendQuestionsModel })
+    public async appendQuizQuestionsById(req: Request<QuizId, undefined, AppendQuestions>, res: Response) {
+        const quiz = await QuizService.getQuizById(req.params.quizId);
 
-    res.noContent();
+        if (!AccessService.canUserModify(quiz, req.requester.id)) {
+            return res.forbidden('Only the owner can update a quiz');
+        }
+
+        const updatedQuiz = await QuizService.appendQuizQuestionsById(req.params.quizId, req.body.questions);
+
+        res.ok(quizDto(updatedQuiz));
+    }
 }

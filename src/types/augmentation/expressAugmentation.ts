@@ -15,15 +15,15 @@ export interface ErrorResponse {
 }
 
 declare module 'express-serve-static-core' {
-    export interface Response {
+    export interface Response<ResBody> {
         /**
          * @status 200
          */
-        ok(body: any): void;
+        ok(body: ResBody): void;
         /**
          * @status 201
          */
-        created(body: any): void;
+        created(body: ResBody): void;
         /**
          * @status 204
          */

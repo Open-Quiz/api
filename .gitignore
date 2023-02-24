@@ -14,7 +14,7 @@ yarn-error.log
 # prisma
 prisma/zod
 
-src/zod
+src/models/zod/generated
 coverage/
 
 # IDES

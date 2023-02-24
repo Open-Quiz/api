@@ -1,11 +1,12 @@
 import * as z from 'zod';
 
-export const IdModel = z.object({
-    id: z.coerce.number().int().min(1),
+export const QuizIdModel = z.object({
+    quizId: z.coerce.number().int().min(1),
 });
 
-export const IdArrayModel = z.object({
-    ids: z.number().int().min(1).array(),
+export const QuestionIdModel = z.object({
+    questionId: z.coerce.number().int().min(1),
 });
 
-export type IdArray = z.infer<typeof IdArrayModel>;
+export type QuizId = z.infer<typeof QuizIdModel>;
+export type QuestionId = z.infer<typeof QuestionIdModel>;

@@ -1,8 +1,8 @@
 import supertest from 'supertest';
+import config from '../config';
 
 const localhost = '127.0.0.1';
-const port = process.env.PORT!;
 
-const request = supertest(`http://${localhost}:${port}`);
+const request = supertest(`http://${localhost}:${config.api.port}`);
 
 export default request;

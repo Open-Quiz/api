@@ -1,4 +1,4 @@
-import { BadRequestErrorMessage } from '../types/expressAugmentation';
+import { BadRequestErrorMessage } from '../types/augmentation/expressAugmentation';
 
 export default class BadRequestError extends Error {
     private readonly errorMessages: BadRequestErrorMessage[];
