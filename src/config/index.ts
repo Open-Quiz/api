@@ -11,4 +11,7 @@ export default {
         },
         secret: new TextEncoder().encode(required(process.env.JWT_SECRET)),
     },
+    google: {
+        clientId: required(process.env.GOOGLE_CLIENT_ID),
+    },
 };
