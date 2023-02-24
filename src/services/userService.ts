@@ -1,5 +1,6 @@
 import { Provider } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
+import prisma from '../client/instance';
 import config from '../config';
 import BadRequestError from '../errors/badRequestError';
 
@@ -18,7 +19,7 @@ export namespace UserService {
     }
 
     // Modified from: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
-    export async function loginWithGoogle(idToken: string) {
+    async function loginWithGoogle(idToken: string) {
         const ticket = await googleClient.verifyIdToken({
             idToken,
             audience: config.google.clientId,
@@ -35,5 +36,31 @@ export namespace UserService {
         }
 
         const userId = payload.sub;
+        return await loginWithProvider(Provider.Google, userId);
+    }
+
+    async function loginWithProvider(provider: Provider, providerId: string) {
+        const userProvider = await prisma.userProvider.findFirst({
+            where: { provider, providerId },
+            include: { user: true },
+        });
+
+        if (!userProvider) {
+            const user = await prisma.user.create({
+                data: { isBot: false },
+            });
+
+            await prisma.userProvider.create({
+                data: {
+                    userId: user.id,
+                    provider,
+                    providerId,
+                },
+            });
+
+            return user;
+        }
+
+        return userProvider.user;
     }
 }

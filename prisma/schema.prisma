@@ -18,7 +18,7 @@ model UserProvider {
   provider   Provider
   providerId String
 
-  @@unique([userId, provider])
+  @@unique([provider, providerId])
 }
 
 model User {
