@@ -83,7 +83,7 @@ export namespace QuestionService {
     }
 
     export function validateQuestion(question: CreateQuestion) {
-        if (question.correctOption >= question.options.length) {
+        if (question.correctOption >= question.options.length || question.correctOption < 0) {
             throw new BadRequestError([
                 {
                     path: 'correctOption',
