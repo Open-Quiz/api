@@ -17,5 +17,5 @@ prisma/zod
 src/models/zod/generated
 coverage/
 
-# IDES
-.vscode
+# IDE settings
+.vscode/settings.json
