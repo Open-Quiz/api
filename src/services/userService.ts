@@ -1,42 +1,28 @@
 import { Provider } from '@prisma/client';
-import { OAuth2Client } from 'google-auth-library';
 import prisma from '../client/instance';
-import config from '../config';
 import BadRequestError from '../errors/badRequestError';
+import GoogleProvider from './providers/googleProvider';
+import { ServiceProvider } from './providers/serviceProvider';
 
 export namespace UserService {
-    const googleClient = new OAuth2Client(config.google.clientId);
+    const providers: Record<Provider, ServiceProvider> = {
+        [Provider.Google]: new GoogleProvider(),
+    };
 
-    export async function login(provider: string, token: string) {
-        switch (provider) {
-            case Provider.Google:
-                return await loginWithGoogle(token);
-            default:
-                throw new BadRequestError([
-                    { path: 'authorization.provider', message: `The login provider ${provider} is not supporter` },
-                ]);
-        }
+    function isValidProvider(provider: string): provider is Provider {
+        return provider in Provider;
     }
 
-    // Modified from: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
-    async function loginWithGoogle(idToken: string) {
-        const ticket = await googleClient.verifyIdToken({
-            idToken,
-            audience: config.google.clientId,
-        });
-
-        const payload = ticket.getPayload();
-        if (!payload) {
+    export async function login(provider: string, token: string) {
+        if (!isValidProvider(provider)) {
             throw new BadRequestError([
-                {
-                    path: 'authorization.token',
-                    message: 'There was an issue verifying the google id token. The payload is missing.',
-                },
+                { path: 'authorization.provider', message: `The login provider ${provider} is not supporter` },
             ]);
         }
 
-        const userId = payload.sub;
-        return await loginWithProvider(Provider.Google, userId);
+        const serviceProvider = providers[provider];
+        const providerId = await serviceProvider.extractProviderId(token);
+        return await loginWithProvider(provider, providerId);
     }
 
     async function loginWithProvider(provider: Provider, providerId: string) {
