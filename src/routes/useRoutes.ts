@@ -2,10 +2,11 @@ import { Express } from 'express';
 import { RequestHandler, Router } from 'express';
 import { getControllerMeta } from '../decorators/controller';
 import { getRouteMeta, RouteMeta } from '../decorators/route';
+import { deleteMiddlewareMeta, getMiddlewareMeta } from '../decorators/use';
 import { catchErrorWrapper } from '../middleware/errorHandler';
 import { Method } from '../types/enums/Method';
 
-type Routes = (RouteMeta & { handler: RequestHandler })[];
+type Routes = (RouteMeta & { handlers: RequestHandler[] })[];
 
 interface UseRouteOptions {
     baseRoute?: string;
@@ -16,11 +17,11 @@ function isRequestHandler(handler: any): handler is RequestHandler {
     return typeof handler === 'function'; // && hasRouteMeta(handler);
 }
 
-function generateRouter(routes: Routes) {
+function generateRouter(routes: Routes): Router {
     const router = Router();
 
     for (const route of routes) {
-        const args = [route.route, route.handler] as const;
+        const args = [route.route, ...route.handlers] as const;
         switch (route.method) {
             case Method.GET:
                 router.get(...args);
@@ -44,7 +45,11 @@ function generateRouter(routes: Routes) {
 }
 
 function generateRoutes(controller: object): Routes {
+    const controllerMiddleware = getMiddlewareMeta(controller);
     const routes: Routes = [];
+
+    // Remove unnecessary metadata
+    deleteMiddlewareMeta(controller);
 
     const proto = controller.constructor.prototype;
     Object.getOwnPropertyNames(proto).forEach((key) => {
@@ -53,8 +58,13 @@ function generateRoutes(controller: object): Routes {
             const meta = getRouteMeta(descriptor.value);
 
             if (meta && isRequestHandler(descriptor.value)) {
+                const handlerMiddleware = getMiddlewareMeta(descriptor.value);
                 const handler = catchErrorWrapper(descriptor.value.bind(controller));
-                routes.push({ ...meta, handler });
+
+                // Remove unnecessary metadata
+                deleteMiddlewareMeta(descriptor.value);
+
+                routes.push({ ...meta, handlers: [...controllerMiddleware, ...handlerMiddleware, handler] });
             }
         }
     });
@@ -62,7 +72,7 @@ function generateRoutes(controller: object): Routes {
     return routes;
 }
 
-export function useRoutes(app: Express, options: UseRouteOptions) {
+export function useRoutes(app: Express, options: UseRouteOptions): void {
     const baseRoute = options.baseRoute ?? '';
     for (const controller of options.controllers) {
         const controllerMeta = getControllerMeta(controller.constructor);

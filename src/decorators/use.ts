@@ -1,34 +1,37 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { RequestHandler } from 'express';
 import { ParamsDictionary, Query } from 'express-serve-static-core';
 import { RequestHandlers } from '../types/interfaces/requestHandlers';
+import { Constructor } from '../types/utility';
+
+const MiddlewareMetadataKey = Symbol('middleware');
+
+type DecoratorArguments<T> = [any, string, TypedPropertyDescriptor<T>] | [constructor: Constructor];
+
+export function getMiddlewareMeta(target: any): RequestHandler<any, any, any, any>[] {
+    return Reflect.getOwnMetadata(MiddlewareMetadataKey, target) ?? [];
+}
+
+export function deleteMiddlewareMeta(target: any) {
+    Reflect.deleteProperty(target, MiddlewareMetadataKey);
+}
 
 export default function Use<ParamType = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     middleware: RequestHandler<ParamType, ResBody, ReqBody, ReqQuery>,
 ) {
     return function <Handler extends RequestHandlers<ParamType, ResBody, ReqBody, ReqQuery>>(
-        target: any,
-        propertyKey: string,
-        descriptor: TypedPropertyDescriptor<Handler>,
+        ...args: DecoratorArguments<Handler>
     ) {
-        const original = descriptor.value;
+        let target: any;
+        if (args.length === 1) {
+            // Class decorator
+            target = args[0];
+        } else {
+            // Method decorator
+            target = args[2].value;
+        }
 
-        const handler = async function (
-            this: ThisType<Handler>,
-            req: Request<ParamType, ResBody, ReqBody, ReqQuery>,
-            res: Response<ResBody>,
-            next: NextFunction,
-        ) {
-            const nextFunction = (err?: any) => {
-                if (err) {
-                    next(err);
-                } else {
-                    Promise.resolve(original?.call(this, req, res, next)).catch(next);
-                }
-            };
-
-            middleware(req, res, nextFunction);
-        };
-
-        descriptor.value = handler as Handler;
+        const middlewares = getMiddlewareMeta(target);
+        middlewares.push(middleware);
+        Reflect.defineMetadata(MiddlewareMetadataKey, middlewares, target);
     };
 }
