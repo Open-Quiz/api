@@ -8,6 +8,7 @@ import QuizController from '../controllers/quizController';
 import QuizQuestionController from '../controllers/questionController';
 import errorHandler from '../middleware/errorHandler';
 import { useRoutes } from '../routes/useRoutes';
+import { UserController } from '../controllers/userController';
 
 export default function createApp() {
     const app = express();
@@ -17,7 +18,7 @@ export default function createApp() {
 
     useRoutes(app, {
         baseRoute: '/api/v1',
-        controllers: [new QuizQuestionController(), new QuizController()],
+        controllers: [new QuizQuestionController(), new QuizController(), new UserController()],
     });
 
     app.use(errorHandler);

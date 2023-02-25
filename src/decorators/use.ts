@@ -30,9 +30,11 @@ export default function Use<ParamType = ParamsDictionary, ResBody = any, ReqBody
             target = args[2].value;
         }
 
-        // TODO: Check if I should be inserting the middleware at the front
         const middlewares = getMiddlewareMeta(target);
-        middlewares.push(middleware);
-        Reflect.defineMetadata(MiddlewareMetadataKey, middlewares, target);
+
+        // Add middleware to front of the array so that it is executed
+        // from top to bottom in the order it is defined on the target.
+        const updatedMiddlewares = [middleware, ...middlewares];
+        Reflect.defineMetadata(MiddlewareMetadataKey, updatedMiddlewares, target);
     };
 }
