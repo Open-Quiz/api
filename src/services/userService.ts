@@ -11,10 +11,40 @@ export namespace UserService {
         [Provider.Google]: new GoogleProvider(),
     };
 
-    function isValidProvider(provider: string): provider is Provider {
-        return provider in Provider;
+    /**
+     * Fetches the user with the given id and it's data.
+     *
+     * @param {number} id The id of the user to fetch
+     * @returns {Promise<CompleteUser>} The fetched complete user
+     * @throws `UserDeletedError` If the user with the given id does not exist
+     */
+    export async function getUserByIdWithData(id: number): Promise<CompleteUser> {
+        const user = await prisma.user.findFirst({
+            where: { id },
+            include: { data: true },
+        });
+
+        if (!user) {
+            throw new UserDeletedError(id);
+        }
+
+        return user;
     }
 
+    /**
+     * Logs in user with the given provider and that providers respective token. If
+     * there is no user linked to the given provider it will create a new user, otherwise,
+     * it will return the existing user. It also checks that the user's data is up to date
+     * and updates it if necessary.
+     *
+     * @param {Provider} provider The provider to use for login
+     * @param {string} token The providers respective token
+     * @returns {Promise<CompleteUser>} The complete user that was logged in
+     * @throws `BadRequestError` If the given provider is not supported
+     * @throws `BadRequestError` If something went wrong while extracting the provider data
+     * @throws `UserDeletedError` If there is a user provider but no user. This can happen if
+     *         the user was deleted just before the user was fetched.
+     */
     export async function login(provider: string, token: string): Promise<CompleteUser> {
         if (!isValidProvider(provider)) {
             throw new BadRequestError([
@@ -25,6 +55,10 @@ export namespace UserService {
         const serviceProvider = providers[provider];
         const providerData = await serviceProvider.extractProviderData(token);
         return await loginWithProvider(provider, providerData);
+    }
+
+    function isValidProvider(provider: string): provider is Provider {
+        return provider in Provider;
     }
 
     async function loginWithProvider(provider: Provider, providerData: ProviderData): Promise<CompleteUser> {
