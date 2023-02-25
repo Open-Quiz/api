@@ -1,3 +1,10 @@
+import { UserData } from '@prisma/client';
+
+export interface ProviderData {
+    providerId: string;
+    data: Omit<UserData, 'userId'>;
+}
+
 export interface ServiceProvider {
-    extractProviderId(token: string): Promise<string>;
+    extractProviderData(token: string): Promise<ProviderData>;
 }

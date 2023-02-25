@@ -21,12 +21,20 @@ model UserProvider {
   @@unique([provider, providerId])
 }
 
+model UserData {
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  username       String?
+  profilePicture String?
+}
+
 model User {
   id           Int     @id @default(autoincrement())
   isBot        Boolean @default(false)
   mainProvider Provider
-  quizzes Quiz[]
-  providers UserProvider[]
+  quizzes      Quiz[]
+  providers    UserProvider[]
+  data         UserData?
 }
 
 model Quiz {
