@@ -30,6 +30,7 @@ export default function Use<ParamType = ParamsDictionary, ResBody = any, ReqBody
             target = args[2].value;
         }
 
+        // TODO: Check if I should be inserting the middleware at the front
         const middlewares = getMiddlewareMeta(target);
         middlewares.push(middleware);
         Reflect.defineMetadata(MiddlewareMetadataKey, middlewares, target);

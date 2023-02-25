@@ -6,7 +6,6 @@ import express from 'express';
 import config from '../config';
 import QuizController from '../controllers/quizController';
 import QuizQuestionController from '../controllers/questionController';
-import authenticationHandler from '../middleware/authenticationHandler';
 import errorHandler from '../middleware/errorHandler';
 import { useRoutes } from '../routes/useRoutes';
 
@@ -15,7 +14,6 @@ export default function createApp() {
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
-    app.use(authenticationHandler);
 
     useRoutes(app, {
         baseRoute: '/api/v1',

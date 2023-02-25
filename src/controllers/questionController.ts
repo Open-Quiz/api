@@ -3,6 +3,7 @@ import Controller from '../decorators/controller';
 import { Delete, Get, Patch } from '../decorators/route';
 import Validate from '../decorators/validate';
 import ForbiddenError from '../errors/forbiddenError';
+import LoggedIn from '../decorators/authenticationHandler';
 import questionDto from '../models/dtos/questionDto';
 import { QuestionId, QuestionIdModel } from '../models/zod/idModel';
 import {
@@ -16,6 +17,7 @@ import {
 import { AccessService } from '../services/accessService';
 import { QuestionService } from '../services/questionService';
 
+@LoggedIn
 @Controller('/questions')
 export default class QuizQuestionController {
     @Delete()

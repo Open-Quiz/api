@@ -8,7 +8,9 @@ import { QuizIdModel, QuizId } from '../models/zod/idModel';
 import { QuizService } from '../services/quizService';
 import { CreateQuiz, CreateQuizModel, UpdateQuiz, UpdateQuizModel } from '../models/zod/quizModel';
 import { AccessService } from '../services/accessService';
+import LoggedIn from '../decorators/authenticationHandler';
 
+@LoggedIn
 @Controller('/quizzes')
 export default class QuizController {
     @Get()

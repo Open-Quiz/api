@@ -3,8 +3,12 @@ import { TokenService } from '../services/tokenService';
 import * as jose from 'jose';
 import prisma from '../client/instance';
 import { TokenType } from '../types/enums/TokenType';
+import Use from '../decorators/use';
 
-export default async function authenticationHandler(req: Request, res: Response, next: NextFunction) {
+const LoggedIn = Use(authenticationHandler);
+export default LoggedIn;
+
+export async function authenticationHandler(req: Request, res: Response, next: NextFunction) {
     if (!req.headers.authorization) {
         return res.unauthorized('Missing access token from authorization header');
     }

@@ -14,7 +14,7 @@ interface UseRouteOptions {
 }
 
 function isRequestHandler(handler: any): handler is RequestHandler {
-    return typeof handler === 'function'; // && hasRouteMeta(handler);
+    return typeof handler === 'function';
 }
 
 function generateRouter(routes: Routes): Router {
@@ -45,7 +45,7 @@ function generateRouter(routes: Routes): Router {
 }
 
 function generateRoutes(controller: object): Routes {
-    const controllerMiddleware = getMiddlewareMeta(controller);
+    const controllerMiddleware = getMiddlewareMeta(controller.constructor);
     const routes: Routes = [];
 
     // Remove unnecessary metadata
