@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import LoggedIn from '../decorators/authenticationHandler';
 import Controller from '../decorators/controller';
-import { Get, Post } from '../decorators/route';
+import { Delete, Get, Patch, Post } from '../decorators/route';
+import Validate from '../decorators/validate';
+import { LinkProvider, LinkProviderModel } from '../models/zod/providerModel';
+import { UpdateUser, UpdateUserModel } from '../models/zod/userModel';
 import { UserService } from '../services/userService';
 
 @Controller('/users')
@@ -22,4 +25,18 @@ export class UserController {
         const user = await UserService.getUserByIdWithData(req.requester.id);
         res.ok(user);
     }
+
+    @LoggedIn
+    @Patch('/@me')
+    @Validate({ body: UpdateUserModel })
+    public async updateSelf(req: Request<unknown, unknown, UpdateUser>, res: Response) {}
+
+    @LoggedIn
+    @Post('/@me/link')
+    @Validate({ body: LinkProviderModel })
+    public async linkProvider(req: Request<unknown, unknown, LinkProvider>, res: Response) {}
+
+    @LoggedIn
+    @Delete('/@me/data')
+    public async deleteUserData(req: Request, res: Response) {}
 }
