@@ -1,8 +1,10 @@
 import { UserData } from '@prisma/client';
 
+export type UserDataWithoutId = Omit<UserData, 'userId'>;
+
 export interface ProviderData {
     providerId: string;
-    data: Omit<UserData, 'userId'>;
+    data: UserDataWithoutId;
 }
 
 export interface ServiceProvider {

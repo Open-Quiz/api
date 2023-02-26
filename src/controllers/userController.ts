@@ -5,6 +5,7 @@ import { Delete, Get, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
 import BadRequestError from '../errors/badRequestError';
 import { LinkProvider, LinkProviderModel } from '../models/zod/providerModel';
+import { UserDataService } from '../services/userDataService';
 import { UserService } from '../services/userService';
 
 @Controller('/users')
@@ -54,5 +55,8 @@ export class UserController {
 
     @LoggedIn
     @Delete('/@me/data')
-    public async deleteUserData(req: Request, res: Response) {}
+    public async deleteUserData(req: Request, res: Response) {
+        await UserDataService.deleteUserData(req.requester.id);
+        res.noContent();
+    }
 }

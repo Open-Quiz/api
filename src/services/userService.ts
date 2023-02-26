@@ -1,10 +1,12 @@
-import { Provider, UserData } from '@prisma/client';
+import { Provider } from '@prisma/client';
 import prisma from '../client/instance';
 import UserDeletedError from '../errors/UserDeletedError';
 import { CompleteUser } from '../models/zod/userModel';
 import LoginResult from '../types/interfaces/loginResult';
 import GoogleProvider from './providers/googleProvider';
 import { ProviderData, ServiceProvider } from './providers/serviceProvider';
+import { UserDataService } from './userDataService';
+import { UserProviderService } from './userProviderService';
 
 export namespace UserService {
     const providers: Record<Provider, ServiceProvider> = {
@@ -72,30 +74,14 @@ export namespace UserService {
         const providerData = await serviceProvider.extractProviderData(token);
 
         const user = await getUserByIdWithData(userId);
+        const updateMainProvider = makeMainProvider && user.mainProvider !== provider;
 
-        await prisma.userProvider.upsert({
-            where: { provider_userId: { provider, userId } },
-            create: {
-                userId,
-                provider,
-                providerId: providerData.providerId,
-            },
-            update: {
-                providerId: providerData.providerId,
-            },
-        });
+        await UserProviderService.createOrUpdateUserProvider(userId, provider, providerData);
 
-        if (
-            (makeMainProvider && user.mainProvider !== provider) ||
-            isUserDataIsOutdated(user.data, providerData.data)
-        ) {
-            await prisma.userData.upsert({
-                where: { userId },
-                create: { ...providerData.data, userId },
-                update: providerData.data,
-            });
+        if (updateMainProvider || UserDataService.isUserDataIsOutdated(user.data, providerData.data)) {
+            await UserDataService.updateUserData(userId, { ...providerData.data, userId });
 
-            if (makeMainProvider && user.mainProvider !== provider) {
+            if (updateMainProvider) {
                 return await prisma.user.update({
                     where: { id: userId },
                     data: { mainProvider: provider },
@@ -117,16 +103,19 @@ export namespace UserService {
         });
 
         if (!userProvider) {
-            return { user: await signupWithProvider(provider, providerData), wasSignedUp: true };
+            return { user: await signUpWithProvider(provider, providerData), wasSignedUp: true };
         }
 
         return {
-            user: await updateUserData(provider, { ...providerData.data, userId: userProvider.userId }),
+            user: await UserDataService.updateUserDataIfOutdated(provider, {
+                ...providerData.data,
+                userId: userProvider.userId,
+            }),
             wasSignedUp: false,
         };
     }
 
-    async function signupWithProvider(provider: Provider, providerData: ProviderData): Promise<CompleteUser> {
+    async function signUpWithProvider(provider: Provider, providerData: ProviderData): Promise<CompleteUser> {
         const user = await prisma.user.create({
             data: {
                 isBot: false,
@@ -134,58 +123,7 @@ export namespace UserService {
             },
         });
 
-        const createUserData = prisma.userData.create({
-            data: {
-                userId: user.id,
-                ...providerData.data,
-            },
-        });
-
-        const createUserProvider = prisma.userProvider.create({
-            data: {
-                userId: user.id,
-                provider,
-                providerId: providerData.providerId,
-            },
-        });
-
-        const [userData] = await prisma.$transaction([createUserData, createUserProvider]);
+        const [userData] = await UserProviderService.createUserDataAndProvider(user.id, provider, providerData);
         return { ...user, data: userData };
-    }
-
-    async function updateUserData(provider: Provider, data: UserData): Promise<CompleteUser> {
-        const user = await prisma.user.findFirst({
-            where: { id: data.userId },
-            include: { data: true },
-        });
-
-        if (!user) {
-            throw new UserDeletedError(data.userId);
-        }
-
-        if (user.mainProvider !== provider) {
-            // Only use the data from the user's main provider
-            return user;
-        }
-
-        if (isUserDataIsOutdated(user.data, data))
-            user.data = await prisma.userData.upsert({
-                where: { userId: user.id },
-                create: data,
-                update: data,
-            });
-
-        return user;
-    }
-
-    function isUserDataIsOutdated(
-        currentUserData: Omit<UserData, 'userId'> | null,
-        newUserData: Omit<UserData, 'userId'>,
-    ): boolean {
-        return (
-            currentUserData === null ||
-            currentUserData.username !== newUserData.username ||
-            currentUserData.profilePicture !== newUserData.profilePicture
-        );
     }
 }
