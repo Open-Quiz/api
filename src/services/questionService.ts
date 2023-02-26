@@ -84,12 +84,10 @@ export namespace QuestionService {
 
     export function validateQuestion(question: CreateQuestion) {
         if (question.correctOption >= question.options.length || question.correctOption < 0) {
-            throw new BadRequestError([
-                {
-                    path: 'correctOption',
-                    message: 'The correct option must be an index of options',
-                },
-            ]);
+            throw new BadRequestError({
+                path: 'correctOption',
+                message: 'The correct option must be an index of options',
+            });
         }
     }
 

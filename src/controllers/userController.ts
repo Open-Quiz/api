@@ -5,6 +5,7 @@ import { Delete, Get, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
 import BadRequestError from '../errors/badRequestError';
 import { LinkProvider, LinkProviderModel } from '../models/zod/providerModel';
+import { TokenService } from '../services/tokenService';
 import { UserDataService } from '../services/userDataService';
 import { UserService } from '../services/userService';
 
@@ -18,18 +19,20 @@ export class UserController {
 
         const [provider, token] = req.headers.authorization.split(' ', 2);
         if (!UserService.isValidProvider(provider)) {
-            throw new BadRequestError({
-                path: 'authorization.provider',
-                message: `The login provider ${provider} is not supporter`,
-            });
+            return res.unauthorized(`The login provider ${provider} is not supporter`);
         }
 
         const { user, wasSignedUp } = await UserService.login(provider, token);
+        const responseData = {
+            user,
+            token: TokenService.signAccessToken(user.id),
+        };
+
         if (wasSignedUp) {
-            return res.created(user);
+            return res.created(responseData);
         }
 
-        res.ok(user);
+        res.ok(responseData);
     }
 
     @LoggedIn
