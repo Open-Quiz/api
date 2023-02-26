@@ -3,9 +3,9 @@ import { BadRequestErrorMessage } from '../types/augmentation/expressAugmentatio
 export default class BadRequestError extends Error {
     private readonly errorMessages: BadRequestErrorMessage[];
 
-    constructor(errors: BadRequestErrorMessage[]) {
+    constructor(errors: BadRequestErrorMessage | BadRequestErrorMessage[]) {
         super();
-        this.errorMessages = errors;
+        this.errorMessages = Array.isArray(errors) ? errors : [errors];
     }
 
     get errors() {

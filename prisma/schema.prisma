@@ -19,6 +19,7 @@ model UserProvider {
   providerId String
 
   @@unique([provider, providerId])
+  @@unique([provider, userId])
 }
 
 model UserData {

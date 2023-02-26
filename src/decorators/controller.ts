@@ -10,7 +10,7 @@ export function getControllerMeta(constructor: any): ControllerMeta | undefined 
     return Reflect.getOwnMetadata(ControllerMetadataKey, constructor);
 }
 
-export default function Controller(route?: string) {
+export default function Controller(route: string = '') {
     return function (constructor: Constructor) {
         Reflect.defineMetadata(ControllerMetadataKey, { route }, constructor);
     };

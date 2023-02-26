@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import LoggedIn from '../decorators/authenticationHandler';
 import Controller from '../decorators/controller';
-import { Delete, Get, Patch, Post } from '../decorators/route';
+import { Delete, Get, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
+import BadRequestError from '../errors/badRequestError';
 import { LinkProvider, LinkProviderModel } from '../models/zod/providerModel';
-import { UpdateUser, UpdateUserModel } from '../models/zod/userModel';
 import { UserService } from '../services/userService';
 
 @Controller('/users')
@@ -16,7 +16,19 @@ export class UserController {
         }
 
         const [provider, token] = req.headers.authorization.split(' ', 2);
-        return await UserService.login(provider, token);
+        if (!UserService.isValidProvider(provider)) {
+            throw new BadRequestError({
+                path: 'authorization.provider',
+                message: `The login provider ${provider} is not supporter`,
+            });
+        }
+
+        const { user, wasSignedUp } = await UserService.login(provider, token);
+        if (wasSignedUp) {
+            return res.created(user);
+        }
+
+        res.ok(user);
     }
 
     @LoggedIn
@@ -27,14 +39,18 @@ export class UserController {
     }
 
     @LoggedIn
-    @Patch('/@me')
-    @Validate({ body: UpdateUserModel })
-    public async updateSelf(req: Request<unknown, unknown, UpdateUser>, res: Response) {}
-
-    @LoggedIn
     @Post('/@me/link')
     @Validate({ body: LinkProviderModel })
-    public async linkProvider(req: Request<unknown, unknown, LinkProvider>, res: Response) {}
+    public async linkProvider(req: Request<unknown, unknown, LinkProvider>, res: Response) {
+        const upatedUser = await UserService.linkProvider(
+            req.requester.id,
+            req.body.provider,
+            req.body.token,
+            req.body.makeMainProvider ?? false,
+        );
+
+        res.ok(upatedUser);
+    }
 
     @LoggedIn
     @Delete('/@me/data')
