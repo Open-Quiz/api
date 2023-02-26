@@ -18,7 +18,6 @@ export namespace UserService {
      *
      * @param {number} id The id of the user to fetch
      * @returns {Promise<CompleteUser>} The fetched complete user
-     * @throws `UserDeletedError` If the user with the given id does not exist
      */
     export async function getUserByIdWithData(id: number): Promise<CompleteUser> {
         const user = await prisma.user.findFirst({
@@ -42,9 +41,6 @@ export namespace UserService {
      * @param {Provider} provider The provider to use for login
      * @param {string} token The providers respective token
      * @returns {Promise<LoginResult>} The complete user that was logged in and whether they were signed up
-     * @throws `BadRequestError` If something went wrong while extracting the provider data
-     * @throws `UserDeletedError` If there is a user provider but no user. This can happen if
-     *         the user was deleted just before the user was fetched.
      */
     export async function login(provider: Provider, token: string): Promise<LoginResult> {
         const serviceProvider = providers[provider];
@@ -62,7 +58,6 @@ export namespace UserService {
      * @param {string} token The provider's respective token
      * @param {boolean} makeMainProvider If the provider should be set to the user's main provider
      * @returns {Promise<CompleteUser>} The complete user that was linked to the provider
-     * @throws `UserDeletedError` If the user with the given id does not exist
      */
     export async function linkProvider(
         userId: number,
@@ -93,10 +88,34 @@ export namespace UserService {
         return user;
     }
 
+    /**
+     * Checks whether the given string is a valid provider and types it as such if it is.
+     *
+     * @param {string} provider The string to check
+     * @returns {boolean} Whether the given string is a valid provider
+     */
     export function isValidProvider(provider: string): provider is Provider {
         return provider in Provider;
     }
 
+    /**
+     * Deletes the user with the given id.
+     *
+     * @param userId The id of the user to delete
+     */
+    export async function deleteUser(userId: number): Promise<void> {
+        await prisma.user.delete({ where: { id: userId } });
+    }
+
+    /**
+     * Logs in with the given provider and it's extracted data. If there is no user linked to that
+     * provider then it will create a new user and link the provider to it. Otherwise, it checks if
+     * the user data is outdated and updates it if necessary.
+     *
+     * @param {Provider} provider The used to login
+     * @param {ProviderData} providerData The extracted data from the provider
+     * @returns {Promise<LoginResult>} The user that was logged in and whether they were just signed up
+     */
     async function loginWithProvider(provider: Provider, providerData: ProviderData): Promise<LoginResult> {
         const userProvider = await prisma.userProvider.findFirst({
             where: { provider, providerId: providerData.providerId },
@@ -115,6 +134,13 @@ export namespace UserService {
         };
     }
 
+    /**
+     * Signs up a new user with the given provider and it's extracted data.
+     *
+     * @param {Provider} provider The provider to use for sign up
+     * @param {ProviderData} providerData The extracted data from the provider
+     * @returns {Promise<CompleteUser>}  The user created after signing up
+     */
     async function signUpWithProvider(provider: Provider, providerData: ProviderData): Promise<CompleteUser> {
         const user = await prisma.user.create({
             data: {

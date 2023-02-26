@@ -40,6 +40,13 @@ export class UserController {
     }
 
     @LoggedIn
+    @Delete('/@me')
+    public async deleteSelf(req: Request, res: Response) {
+        await UserService.deleteUser(req.requester.id);
+        res.noContent();
+    }
+
+    @LoggedIn
     @Post('/@me/link')
     @Validate({ body: LinkProviderModel })
     public async linkProvider(req: Request<unknown, unknown, LinkProvider>, res: Response) {

@@ -23,6 +23,14 @@ export namespace UserDataService {
         );
     }
 
+    /**
+     * Updates the user's data if the respective provider is the main provider and the data
+     * is outdated.
+     *
+     * @param {Provider} provider The provider that the user data is from
+     * @param {UserData} data The new user data
+     * @returns {Promise<CompleteUser>} The updated user
+     */
     export async function updateUserDataIfOutdated(provider: Provider, data: UserData): Promise<CompleteUser> {
         const user = await prisma.user.findFirst({
             where: { id: data.userId },
@@ -45,6 +53,13 @@ export namespace UserDataService {
         return user;
     }
 
+    /**
+     * Updates the user's data or creates it, if the user doesn't have any data yet.
+     *
+     * @param {number} userId The id of the user to update the data for
+     * @param {UserData} data The new user data
+     * @returns {Promise<UserData>} The updated user data
+     */
     export async function updateUserData(userId: number, data: UserData): Promise<UserData> {
         return await prisma.userData.upsert({
             where: { userId },
@@ -53,6 +68,11 @@ export namespace UserDataService {
         });
     }
 
+    /**
+     * Deletes the user data for the given user id.
+     *
+     * @param userId The id of the user to delete the data for
+     */
     export async function deleteUserData(userId: number): Promise<void> {
         await prisma.userData.delete({ where: { userId } });
     }
