@@ -142,14 +142,23 @@ export namespace UserService {
      * @returns {Promise<CompleteUser>}  The user created after signing up
      */
     async function signUpWithProvider(provider: Provider, providerData: ProviderData): Promise<CompleteUser> {
-        const user = await prisma.user.create({
+        return await prisma.user.create({
             data: {
                 isBot: false,
                 mainProvider: provider,
+                data: {
+                    create: {
+                        ...providerData.data,
+                    },
+                },
+                providers: {
+                    create: {
+                        provider,
+                        providerId: providerData.providerId,
+                    },
+                },
             },
+            include: { data: true },
         });
-
-        const [userData] = await UserProviderService.createUserDataAndProvider(user.id, provider, providerData);
-        return { ...user, data: userData };
     }
 }

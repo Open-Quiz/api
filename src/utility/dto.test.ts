@@ -8,13 +8,13 @@ describe('@Unit - DTO', () => {
     };
 
     it('Excludes the key from the resulting object', () => {
-        const dto = new DTO(startingObject).exclude('b').build();
+        const dto = new DTO(startingObject).exclude('b').instance;
 
         expect(dto).toStrictEqual({ a: 'A' });
     });
 
     it('Maps the object to the resulting type', () => {
-        const dto = new DTO(startingObject).map((obj) => ({ ...obj, c: 'C' })).build();
+        const dto = new DTO(startingObject).map((obj) => ({ ...obj, c: 'C' })).instance;
 
         expect(dto).toStrictEqual({
             a: 'A',
@@ -24,12 +24,10 @@ describe('@Unit - DTO', () => {
     });
 
     it("Doesn't modify the starting object when mapping it", () => {
-        const dto = new DTO(startingObject)
-            .map((obj) => {
-                delete (obj as any).a;
-                return obj;
-            })
-            .build();
+        const dto = new DTO(startingObject).map((obj) => {
+            delete (obj as any).a;
+            return obj;
+        }).instance;
 
         expect(dto).toStrictEqual({
             b: { a: 'BA', b: 'BB' },
@@ -41,7 +39,7 @@ describe('@Unit - DTO', () => {
     });
 
     it('Selects the key and allows it to be modified', () => {
-        const dto = new DTO(startingObject).select('b', (b) => b.exclude('a').map((b) => ({ ...b, c: 'BC' }))).build();
+        const dto = new DTO(startingObject).select('b', (b) => b.exclude('a').map((b) => ({ ...b, c: 'BC' }))).instance;
 
         expect(dto).toStrictEqual({
             a: 'A',
@@ -55,7 +53,7 @@ describe('@Unit - DTO', () => {
             b: ['BA', 'BB'],
         };
 
-        const dto = new DTO(startingObject).selectEach('b', (b) => b.map((element) => element + 'C')).build();
+        const dto = new DTO(startingObject).selectEach('b', (b) => b.map((element) => element + 'C')).instance;
 
         expect(dto).toStrictEqual({
             a: 'A',
@@ -64,6 +62,6 @@ describe('@Unit - DTO', () => {
     });
 
     it('Throws an error if you try and use selectEach on a non-array key value', () => {
-        expect(() => new DTO(startingObject).selectEach('a', (a) => a).build()).toThrowError();
+        expect(() => new DTO(startingObject).selectEach('a', (a) => a).instance).toThrowError();
     });
 });
