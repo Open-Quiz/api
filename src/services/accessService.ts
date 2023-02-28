@@ -1,11 +1,11 @@
 import { Quiz } from '@prisma/client';
 
 export namespace AccessService {
-    export function canUserAccess(quiz: Quiz, userId: number) {
+    export function canUserAccess(quiz: Quiz, userId: number): boolean {
         return quiz.isPublic || quiz.ownerId === userId || quiz.sharedWithUserIds.includes(userId);
     }
 
-    export function canUserModify(quiz: Quiz, userId: number) {
+    export function canUserModify(quiz: Quiz, userId: number): boolean {
         return quiz.ownerId === userId;
     }
 }

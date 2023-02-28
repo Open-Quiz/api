@@ -2,10 +2,10 @@ import { QuizQuestion } from '@prisma/client';
 import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import NotFoundError from '../errors/notFoundError';
-import { CreateQuestion, UpdateQuestion, UpdateQuestionStats } from '../models/zod/questionModel';
+import { CompleteQuestion, CreateQuestion, UpdateQuestion, UpdateQuestionStats } from '../models/zod/questionModel';
 
 export namespace QuestionService {
-    export async function getQuestionWithQuizById(questionId: number) {
+    export async function getQuestionWithQuizById(questionId: number): Promise<CompleteQuestion> {
         const question = await prisma.quizQuestion.findFirst({
             where: { id: questionId },
             include: { quiz: true },
@@ -18,7 +18,7 @@ export namespace QuestionService {
         return question;
     }
 
-    export async function getQuestionsWithQuizById(questionIds: number[]) {
+    export async function getQuestionsWithQuizById(questionIds: number[]): Promise<CompleteQuestion[]> {
         const questions = await prisma.quizQuestion.findMany({
             where: {
                 id: { in: questionIds },
@@ -39,7 +39,7 @@ export namespace QuestionService {
         currentQuestion: QuizQuestion,
         questionId: number,
         updateQuestion: UpdateQuestion,
-    ) {
+    ): Promise<QuizQuestion> {
         const tempUpdatedQuestion = { ...currentQuestion, ...updateQuestion };
 
         validateQuestion(tempUpdatedQuestion);
@@ -50,7 +50,10 @@ export namespace QuestionService {
         });
     }
 
-    export async function updateQuestionStats(questionId: number, updateQuestionStats: UpdateQuestionStats) {
+    export async function updateQuestionStats(
+        questionId: number,
+        updateQuestionStats: UpdateQuestionStats,
+    ): Promise<QuizQuestion> {
         return await prisma.quizQuestion.update({
             where: { id: questionId },
             data: {
@@ -64,13 +67,13 @@ export namespace QuestionService {
         });
     }
 
-    export async function deleteQuestion(questionId: number) {
+    export async function deleteQuestion(questionId: number): Promise<void> {
         await prisma.quizQuestion.delete({
             where: { id: questionId },
         });
     }
 
-    export async function deleteQuestions(questionIds: number[]) {
+    export async function deleteQuestions(questionIds: number[]): Promise<number> {
         const result = await prisma.quizQuestion.deleteMany({
             where: {
                 id: {
@@ -82,7 +85,7 @@ export namespace QuestionService {
         return result.count;
     }
 
-    export function validateQuestion(question: CreateQuestion) {
+    export function validateQuestion(question: CreateQuestion): void {
         if (question.correctOption >= question.options.length || question.correctOption < 0) {
             throw new BadRequestError({
                 path: 'correctOption',
@@ -91,7 +94,7 @@ export namespace QuestionService {
         }
     }
 
-    export function validateQuestions(questions: CreateQuestion[]) {
+    export function validateQuestions(questions: CreateQuestion[]): void {
         for (const question of questions) {
             validateQuestion(question);
         }

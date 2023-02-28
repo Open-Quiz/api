@@ -1,3 +1,4 @@
+import { Quiz, QuizQuestion } from '@prisma/client';
 import { z } from 'zod';
 import { QuizQuestionModel } from './generated';
 
@@ -28,6 +29,7 @@ export const UpdateQuestionStatsModel = z.object({
     incrementIncorrectAttempts: z.number().positive().optional(),
 });
 
+export type CompleteQuestion = QuizQuestion & { quiz: Quiz };
 export type CreateQuestion = z.infer<typeof CreateQuestionModel>;
 export type UpdateQuestion = z.infer<typeof UpdateQuestionModel>;
 export type AppendQuestions = z.infer<typeof AppendQuestionsModel>;

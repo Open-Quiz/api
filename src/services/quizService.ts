@@ -2,13 +2,13 @@ import prisma from '../client/instance';
 import BadRequestError from '../errors/badRequestError';
 import ForbiddenError from '../errors/forbiddenError';
 import NotFoundError from '../errors/notFoundError';
-import { CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
+import { CompleteQuiz, CreateQuiz, UpdateQuiz } from '../models/zod/quizModel';
 import { CreateQuestion } from '../models/zod/questionModel';
 import { QuestionService } from './questionService';
 import { AccessService } from './accessService';
 
 export namespace QuizService {
-    export async function getAllViewableQuizzes(userId: number) {
+    export async function getAllViewableQuizzes(userId: number): Promise<CompleteQuiz[]> {
         const allQuizzes = await prisma.quiz.findMany({
             include: { questions: true },
             where: {
@@ -19,7 +19,7 @@ export namespace QuizService {
         return allQuizzes;
     }
 
-    export async function getQuizById(quizId: number) {
+    export async function getQuizById(quizId: number): Promise<CompleteQuiz> {
         const quiz = await prisma.quiz.findFirst({
             where: {
                 id: quizId,
@@ -34,7 +34,7 @@ export namespace QuizService {
         return quiz;
     }
 
-    export async function getViewableQuizById(quizId: number, requesterId: number) {
+    export async function getViewableQuizById(quizId: number, requesterId: number): Promise<CompleteQuiz> {
         const quiz = await getQuizById(quizId);
 
         if (!AccessService.canUserAccess(quiz, requesterId)) {
@@ -47,7 +47,7 @@ export namespace QuizService {
     export async function createQuiz(
         { questions = [], sharedWithUserIds = [], ...other }: CreateQuiz,
         ownerId: number,
-    ) {
+    ): Promise<CompleteQuiz> {
         QuestionService.validateQuestions(questions);
 
         sharedWithUserIds = await validateSharedWithUserIds(sharedWithUserIds, ownerId);
@@ -69,7 +69,7 @@ export namespace QuizService {
         return newQuiz;
     }
 
-    export async function appendQuizQuestionsById(quizId: number, questions: CreateQuestion[]) {
+    export async function appendQuizQuestionsById(quizId: number, questions: CreateQuestion[]): Promise<CompleteQuiz> {
         QuestionService.validateQuestions(questions);
 
         return await prisma.quiz.update({
@@ -85,7 +85,11 @@ export namespace QuizService {
         });
     }
 
-    export async function updateQuizById(quizId: number, requesterId: number, updateQuiz: UpdateQuiz) {
+    export async function updateQuizById(
+        quizId: number,
+        requesterId: number,
+        updateQuiz: UpdateQuiz,
+    ): Promise<CompleteQuiz> {
         if (updateQuiz.sharedWithUserIds) {
             updateQuiz.sharedWithUserIds = await validateSharedWithUserIds(updateQuiz.sharedWithUserIds, requesterId);
         }
@@ -97,13 +101,16 @@ export namespace QuizService {
         });
     }
 
-    export async function deleteQuizById(quizId: number) {
+    export async function deleteQuizById(quizId: number): Promise<void> {
         await prisma.quiz.delete({
             where: { id: quizId },
         });
     }
 
-    export async function validateSharedWithUserIds(sharedWithUserIds: number[], requesterId: number) {
+    export async function validateSharedWithUserIds(
+        sharedWithUserIds: number[],
+        requesterId: number,
+    ): Promise<number[]> {
         const distinctSharedWithUserIds = [...new Set(sharedWithUserIds.filter((userId) => userId !== requesterId))];
 
         const sharedWithUserIdsThatExist = (
