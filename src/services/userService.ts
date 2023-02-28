@@ -116,7 +116,7 @@ export namespace UserService {
      * @param {ProviderData} providerData The extracted data from the provider
      * @returns {Promise<LoginResult>} The user that was logged in and whether they were just signed up
      */
-    async function loginWithProvider(provider: Provider, providerData: ProviderData): Promise<LoginResult> {
+    export async function loginWithProvider(provider: Provider, providerData: ProviderData): Promise<LoginResult> {
         const userProvider = await prisma.userProvider.findFirst({
             where: { provider, providerId: providerData.providerId },
         });

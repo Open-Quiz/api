@@ -3,7 +3,7 @@ import LoggedIn from '../decorators/authenticationHandler';
 import Controller from '../decorators/controller';
 import { Delete, Get, Post } from '../decorators/route';
 import Validate from '../decorators/validate';
-import BadRequestError from '../errors/badRequestError';
+import userDto from '../models/dtos/userDto';
 import { LinkProvider, LinkProviderModel } from '../models/zod/providerModel';
 import { TokenService } from '../services/tokenService';
 import { UserDataService } from '../services/userDataService';
@@ -24,7 +24,7 @@ export class UserController {
 
         const { user, wasSignedUp } = await UserService.login(provider, token);
         const responseData = {
-            user,
+            user: userDto(user),
             token: TokenService.signAccessToken(user.id),
         };
 
@@ -39,7 +39,7 @@ export class UserController {
     @Get('/@me')
     public async getSelf(req: Request, res: Response) {
         const user = await UserService.getUserByIdWithData(req.requester.id);
-        res.ok(user);
+        res.ok(userDto(user));
     }
 
     @LoggedIn
@@ -53,14 +53,14 @@ export class UserController {
     @Post('/@me/link')
     @Validate({ body: LinkProviderModel })
     public async linkProvider(req: Request<unknown, unknown, LinkProvider>, res: Response) {
-        const upatedUser = await UserService.linkProvider(
+        const updatedUser = await UserService.linkProvider(
             req.requester.id,
             req.body.provider,
             req.body.token,
             req.body.makeMainProvider ?? false,
         );
 
-        res.ok(upatedUser);
+        res.ok(userDto(updatedUser));
     }
 
     @LoggedIn

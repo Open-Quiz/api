@@ -14,7 +14,7 @@ datasource db {
 
 model UserProvider {
   userId     Int
-  user       User     @relation(fields: [userId], references: [id]) 
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
   provider   Provider
   providerId String
 
@@ -24,7 +24,7 @@ model UserProvider {
 
 model UserData {
   userId         Int      @unique
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   username       String?
   profilePicture String?
 }
