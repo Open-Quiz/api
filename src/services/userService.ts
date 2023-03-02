@@ -73,7 +73,7 @@ export namespace UserService {
 
         await UserProviderService.createOrUpdateUserProvider(userId, provider, providerData);
 
-        if (updateMainProvider || UserDataService.isUserDataIsOutdated(user.data, providerData.data)) {
+        if (updateMainProvider || UserDataService.isUserDataOutdated(user.data, providerData.data)) {
             await UserDataService.updateUserData(userId, { ...providerData.data, userId });
 
             if (updateMainProvider) {

@@ -12,7 +12,7 @@ export namespace UserDataService {
      * @param {UserDataWithoutId} newUserData The recently fetched user data
      * @returns {boolean} Whether is current user data is outdated
      */
-    export function isUserDataIsOutdated(
+    export function isUserDataOutdated(
         currentUserData: UserDataWithoutId | null,
         newUserData: UserDataWithoutId,
     ): boolean {
@@ -46,7 +46,7 @@ export namespace UserDataService {
             return user;
         }
 
-        if (isUserDataIsOutdated(user.data, data)) {
+        if (isUserDataOutdated(user.data, data)) {
             user.data = await updateUserData(data.userId, data);
         }
 
