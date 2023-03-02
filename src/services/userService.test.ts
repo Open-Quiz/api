@@ -77,5 +77,26 @@ describe('@Integration - User Service', () => {
                 },
             });
         });
+
+        it('updates the user data if it has become outdated', async () => {
+            const providerData: ProviderData = {
+                providerId: '1',
+                data: {
+                    username: 'Test 1 Updated',
+                    profilePicture: 'https://example.com/1.png',
+                },
+            };
+
+            const loginResult = await UserService.loginWithProvider(Provider.Google, providerData);
+
+            const updatedUser = { ...user, data: { userId: 1, ...providerData.data } };
+
+            expect(loginResult).toStrictEqual<LoginResult>({
+                wasSignedUp: false,
+                user: updatedUser,
+            });
+
+            user = updatedUser;
+        });
     });
 });
